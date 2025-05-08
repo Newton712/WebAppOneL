@@ -81,29 +81,33 @@ export default function App() {
             </button>
           </div>
 
-          <table className="w-full border mt-4">
-            <thead>
-              <tr className="bg-gray-100">
-                <th className="border px-4 py-2 text-left">Nom du tournoi</th>
-                <th className="border px-4 py-2">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredTournaments.map((tournament) => (
-                <tr key={tournament.id}>
-                  <td className="border px-4 py-2">{tournament.name}</td>
-                  <td className="border px-4 py-2 text-center">
-                    <button
-                      className="text-blue-700 underline"
-                      onClick={() => setSelectedTournament(tournament)}
-                    >
-                      Gérer
-                    </button>
-                  </td>
+          {filteredTournaments.length > 0 ? (
+            <table className="w-full border mt-4">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="border px-4 py-2 text-left">Nom du tournoi</th>
+                  <th className="border px-4 py-2">Action</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {filteredTournaments.map((tournament) => (
+                  <tr key={tournament.id}>
+                    <td className="border px-4 py-2">{tournament.name}</td>
+                    <td className="border px-4 py-2 text-center">
+                      <button
+                        className="text-blue-700 underline"
+                        onClick={() => setSelectedTournament(tournament)}
+                      >
+                        Gérer
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <p className="mt-4 text-gray-600">Aucun tournoi trouvé.</p>
+          )}
         </>
       )}
 
@@ -118,6 +122,7 @@ export default function App() {
     </div>
   );
 }
+
 
 function TournamentDetails({ tournament }) {
   const [rounds, setRounds] = useState([]);
