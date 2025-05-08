@@ -2,25 +2,19 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import logo from './logo.jpg';
-import jauneIcon from './assets/colors/amber.png';
-import mauveIcon from './assets/colors/purple.png';
-import vertIcon from './assets/colors/emerald.png';
-import rougeIcon from './assets/colors/ruby.png';
-import bleuIcon from './assets/colors/sapphire.png';
-import grisIcon from './assets/colors/steel.png';
+import ColorPicker from './ColorPicker';
+import jaune from './assets/colors/jaune.png';
+import mauve from './assets/colors/mauve.png';
+import vert from './assets/colors/vert.png';
+import rouge from './assets/colors/rouge.png';
+import bleu from './assets/colors/bleu.png';
+import gris from './assets/colors/gris.png';
+
+const colorImages = { jaune, mauve, vert, rouge, bleu, gris };
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
-
-const colorOptions = [
-  { value: 'jaune', icon: jauneIcon },
-  { value: 'mauve', icon: mauveIcon },
-  { value: 'vert', icon: vertIcon },
-  { value: 'rouge', icon: rougeIcon },
-  { value: 'bleu', icon: bleuIcon },
-  { value: 'gris', icon: grisIcon },
-];
 
 export default function App() {
   const [tournaments, setTournaments] = useState([]);
@@ -34,8 +28,8 @@ export default function App() {
   }, []);
 
   async function fetchTournaments() {
-    const { data } = await supabase.from('tournaments').select('*');
-    if (data) {
+    const { data, error } = await supabase.from('tournaments').select('*');
+    if (!error) {
       setTournaments(data);
       setFilteredTournaments(data);
     }
@@ -43,12 +37,12 @@ export default function App() {
 
   async function addTournament() {
     if (!newTournamentName.trim()) return;
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('tournaments')
       .insert({ name: newTournamentName })
       .select()
       .single();
-    if (data) {
+    if (!error && data) {
       setNewTournamentName("");
       setTournaments(prev => [...prev, data]);
       setFilteredTournaments(prev => [...prev, data]);
@@ -68,15 +62,15 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6 text-center">
-      <header className="flex items-center justify-center mb-8 gap-4">
-        <img src={logo} alt="Logo" className="h-12 w-12" />
+    <div className="min-h-screen bg-gray-50 p-6">
+      <header className="flex items-center mb-8">
+        <img src={logo} alt="Logo" className="h-12 w-12 mr-4" />
         <h1 className="text-3xl font-bold text-gray-800">Tournois</h1>
       </header>
 
       {!selectedTournament && (
         <div className="flex flex-col items-center">
-          <div className="mb-4 flex gap-2">
+          <div className="mb-4 flex justify-center gap-2">
             <input
               className="border p-2 rounded"
               placeholder="Nom du nouveau tournoi"
@@ -88,7 +82,7 @@ export default function App() {
             </button>
           </div>
 
-          <div className="mb-6 flex gap-2">
+          <div className="mb-6 flex justify-center gap-2">
             <input
               className="border p-2 rounded"
               placeholder="Rechercher un tournoi"
@@ -130,19 +124,14 @@ export default function App() {
 
       {selectedTournament && (
         <div className="max-w-4xl mx-auto">
-          <TournamentDetails tournament={selectedTournament} />
-          <div className="flex justify-center mt-6">
-            <button className="bg-red-500 text-white px-4 py-2 rounded" onClick={backToList}>
-              Retour à la liste
-            </button>
-          </div>
+          <TournamentDetails tournament={selectedTournament} onBack={backToList} />
         </div>
       )}
     </div>
   );
 }
 
-function TournamentDetails({ tournament }) {
+function TournamentDetails({ tournament, onBack }) {
   const [rounds, setRounds] = useState([]);
   const [players, setPlayers] = useState([]);
   const [roundNumber, setRoundNumber] = useState("");
@@ -161,7 +150,7 @@ function TournamentDetails({ tournament }) {
       .from('rounds')
       .select('*')
       .eq('tournament_id', tournament.id);
-    setRounds(data || []);
+    setRounds(data);
   }
 
   async function fetchPlayers() {
@@ -169,7 +158,7 @@ function TournamentDetails({ tournament }) {
       .from('players')
       .select('*')
       .eq('tournament_id', tournament.id);
-    setPlayers(data || []);
+    setPlayers(data);
   }
 
   async function addRound() {
@@ -196,7 +185,7 @@ function TournamentDetails({ tournament }) {
   }
 
   return (
-    <div className="mt-6 text-left">
+    <div className="mt-6">
       <h2 className="text-xl font-bold text-center mb-4">Détails du tournoi : {tournament.name}</h2>
 
       <div className="mb-6">
@@ -212,36 +201,29 @@ function TournamentDetails({ tournament }) {
 
       <div className="mb-6">
         <h3 className="font-semibold">Joueurs</h3>
-        <div className="flex flex-wrap items-center gap-2 mt-2">
+        <div className="flex flex-wrap gap-2 mt-2">
           <input className="border p-1 rounded" placeholder="Nom" value={playerName} onChange={(e) => setPlayerName(e.target.value)} />
           <input className="border p-1 rounded" placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} />
-
-          <select className="border p-1 rounded" value={color1} onChange={(e) => setColor1(e.target.value)}>
-            <option value="">Couleur 1</option>
-            {colorOptions.map(c => (
-              <option key={c.value} value={c.value}>{c.value}</option>
-            ))}
-          </select>
-          {color1 && <img src={colorOptions.find(c => c.value === color1).icon} alt={color1} className="h-6 w-6" />}
-
-          <select className="border p-1 rounded" value={color2} onChange={(e) => setColor2(e.target.value)}>
-            <option value="">Couleur 2</option>
-            {colorOptions.map(c => (
-              <option key={c.value} value={c.value}>{c.value}</option>
-            ))}
-          </select>
-          {color2 && <img src={colorOptions.find(c => c.value === color2).icon} alt={color2} className="h-6 w-6" />}
-
+          <ColorPicker selectedColor={color1} onChange={setColor1} />
+          <ColorPicker selectedColor={color2} onChange={setColor2} />
           <button className="bg-green-500 text-white px-2 py-1 rounded" onClick={addPlayer}>Ajouter</button>
         </div>
-
         <ul className="mt-2 list-disc pl-5">
           {players.map(p => (
-            <li key={p.id}>
-              {p.name} – {p.color1} / {p.color2} ({p.description})
+            <li key={p.id} className="flex items-center gap-2">
+              <span>{p.name}</span>
+              <img src={colorImages[p.color1]} alt={p.color1} className="w-6 h-6" />
+              <img src={colorImages[p.color2]} alt={p.color2} className="w-6 h-6" />
+              <span>({p.description})</span>
             </li>
           ))}
         </ul>
+      </div>
+
+      <div className="flex justify-center mt-6">
+        <button className="bg-red-500 text-white px-4 py-2 rounded" onClick={onBack}>
+          Retour à la liste
+        </button>
       </div>
     </div>
   );
