@@ -1,7 +1,7 @@
 // src/App.jsx
 import { useEffect, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import logo from './logo.jpg';
+import logo from './assets/logo.jpg';
 import ColorPicker from './ColorPicker';
 import jaune from './assets/colors/jaune.png';
 import mauve from './assets/colors/mauve.png';
