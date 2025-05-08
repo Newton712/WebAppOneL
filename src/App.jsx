@@ -1,4 +1,3 @@
-// src/App.jsx
 import { useEffect, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
 
@@ -122,7 +121,6 @@ export default function App() {
     </div>
   );
 }
-
 
 function TournamentDetails({ tournament }) {
   const [rounds, setRounds] = useState([]);
