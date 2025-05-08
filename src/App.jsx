@@ -1,7 +1,5 @@
-// src/App.jsx
 import { useEffect, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import logo from './assets/logo.jpg';
 import ColorPicker from './ColorPicker';
 import jaune from './assets/colors/jaune.png';
 import mauve from './assets/colors/mauve.png';
@@ -64,8 +62,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <header className="flex items-center mb-8">
-        <img src={logo} alt="Logo" className="h-12 w-12 mr-4" />
-        <h1 className="text-3xl font-bold text-gray-800">Tournois</h1>
+        <h1 className="text-3xl font-bold text-gray-800 mx-auto">Tournois</h1>
       </header>
 
       {!selectedTournament && (
