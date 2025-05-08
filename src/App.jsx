@@ -21,10 +21,19 @@ export default function App() {
 
   async function addTournament() {
     if (!newTournamentName.trim()) return;
-    const { error } = await supabase.from('tournaments').insert({ name: newTournamentName });
-    if (!error) {
+  
+    const { data, error } = await supabase
+      .from('tournaments')
+      .insert({ name: newTournamentName })
+      .select()
+      .single(); // récupère directement le tournoi créé
+  
+    if (!error && data) {
       setNewTournamentName("");
-      fetchTournaments();
+      setTournaments((prev) => [...prev, data]); // ajoute localement le tournoi
+      setSelectedTournament(data); // affiche automatiquement TournamentDetails
+    } else {
+      console.error("Erreur lors de la création du tournoi :", error?.message);
     }
   }
 
