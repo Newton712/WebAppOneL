@@ -21,18 +21,10 @@ export default function App() {
 
   async function addTournament() {
     if (!newTournamentName.trim()) return;
-    const { data, error } = await supabase
-      .from('tournaments')
-      .insert({ name: newTournamentName })
-      .select() // nécessaire pour récupérer l'ID du tournoi ajouté
-      .single(); // récupère une seule ligne
-  
+    const { error } = await supabase.from('tournaments').insert({ name: newTournamentName });
     if (!error) {
       setNewTournamentName("");
       fetchTournaments();
-      setSelectedTournament(data); // sélectionne automatiquement le tournoi ajouté
-    } else {
-      console.error("Erreur d'ajout du tournoi :", error.message);
     }
   }
 
@@ -65,16 +57,26 @@ export default function App() {
 function TournamentDetails({ tournament }) {
   const [rounds, setRounds] = useState([]);
   const [players, setPlayers] = useState([]);
+  const [tables, setTables] = useState([]);
   const [roundNumber, setRoundNumber] = useState("");
   const [playerName, setPlayerName] = useState("");
   const [description, setDescription] = useState("");
   const [color1, setColor1] = useState("");
   const [color2, setColor2] = useState("");
+  const [selectedRoundId, setSelectedRoundId] = useState(null);
+  const [tablePlayer1, setTablePlayer1] = useState("");
+  const [tablePlayer2, setTablePlayer2] = useState("");
 
   useEffect(() => {
     fetchRounds();
     fetchPlayers();
   }, [tournament]);
+
+  useEffect(() => {
+    if (selectedRoundId) {
+      fetchTables(selectedRoundId);
+    }
+  }, [selectedRoundId]);
 
   async function fetchRounds() {
     const { data } = await supabase
@@ -90,6 +92,14 @@ function TournamentDetails({ tournament }) {
       .select('*')
       .eq('tournament_id', tournament.id);
     setPlayers(data);
+  }
+
+  async function fetchTables(roundId) {
+    const { data } = await supabase
+      .from('tables')
+      .select('*')
+      .eq('round_id', roundId);
+    setTables(data);
   }
 
   async function addRound() {
@@ -115,19 +125,62 @@ function TournamentDetails({ tournament }) {
     fetchPlayers();
   }
 
+  async function addTable() {
+    if (!selectedRoundId || !tablePlayer1 || !tablePlayer2) return;
+    await supabase.from('tables').insert({
+      round_id: selectedRoundId,
+      player1_id: tablePlayer1,
+      player2_id: tablePlayer2
+    });
+    setTablePlayer1("");
+    setTablePlayer2("");
+    fetchTables(selectedRoundId);
+  }
+
   return (
     <div className="mt-6">
-      <h2 className="text-xl font-bold">Détails du tournoi : {tournament.name}</h2>
+      <h2 className="text-xl font-bold">Tournoi : {tournament.name}</h2>
 
+      {/* Rounds */}
       <div className="mt-4">
         <h3 className="font-semibold">Rounds</h3>
         <input className="border p-1 mr-2" placeholder="Numéro" value={roundNumber} onChange={(e) => setRoundNumber(e.target.value)} />
         <button className="bg-green-500 text-white px-2 py-1" onClick={addRound}>Ajouter</button>
         <ul className="mt-2">
-          {rounds.map(r => <li key={r.id}>Round {r.number}</li>)}
+          {rounds.map(r => (
+            <li key={r.id}>
+              <button className="text-blue-700 underline" onClick={() => setSelectedRoundId(r.id)}>
+                Round {r.number}
+              </button>
+            </li>
+          ))}
         </ul>
       </div>
 
+      {/* Tables du round sélectionné */}
+      {selectedRoundId && (
+        <div className="mt-4">
+          <h3 className="font-semibold">Tables du round sélectionné</h3>
+          <select className="border p-1 mr-2" value={tablePlayer1} onChange={(e) => setTablePlayer1(e.target.value)}>
+            <option value="">Joueur 1</option>
+            {players.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+          </select>
+          <select className="border p-1 mr-2" value={tablePlayer2} onChange={(e) => setTablePlayer2(e.target.value)}>
+            <option value="">Joueur 2</option>
+            {players.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+          </select>
+          <button className="bg-green-500 text-white px-2 py-1" onClick={addTable}>Ajouter Table</button>
+          <ul className="mt-2">
+            {tables.map(t => (
+              <li key={t.id}>
+                Table {t.id} – {players.find(p => p.id === t.player1_id)?.name} vs {players.find(p => p.id === t.player2_id)?.name}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Joueurs */}
       <div className="mt-4">
         <h3 className="font-semibold">Joueurs</h3>
         <input className="border p-1 mr-2" placeholder="Nom" value={playerName} onChange={(e) => setPlayerName(e.target.value)} />
@@ -146,3 +199,4 @@ function TournamentDetails({ tournament }) {
     </div>
   );
 }
+
