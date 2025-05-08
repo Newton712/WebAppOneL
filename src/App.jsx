@@ -7,8 +7,10 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default function App() {
   const [tournaments, setTournaments] = useState([]);
+  const [filteredTournaments, setFilteredTournaments] = useState([]);
   const [selectedTournament, setSelectedTournament] = useState(null);
   const [newTournamentName, setNewTournamentName] = useState("");
+  const [searchName, setSearchName] = useState("");
 
   useEffect(() => {
     fetchTournaments();
@@ -16,48 +18,91 @@ export default function App() {
 
   async function fetchTournaments() {
     const { data, error } = await supabase.from('tournaments').select('*');
-    if (!error) setTournaments(data);
+    if (!error) {
+      setTournaments(data);
+      setFilteredTournaments(data);
+    }
   }
 
   async function addTournament() {
     if (!newTournamentName.trim()) return;
-  
+
     const { data, error } = await supabase
       .from('tournaments')
       .insert({ name: newTournamentName })
       .select()
-      .single(); // récupère directement le tournoi créé
-  
+      .single();
+
     if (!error && data) {
       setNewTournamentName("");
-      setTournaments((prev) => [...prev, data]); // ajoute localement le tournoi
-      setSelectedTournament(data); // affiche automatiquement TournamentDetails
-    } else {
-      console.error("Erreur lors de la création du tournoi :", error?.message);
+      setTournaments((prev) => [...prev, data]);
+      setFilteredTournaments((prev) => [...prev, data]);
+      setSelectedTournament(data);
     }
+  }
+
+  function searchTournament() {
+    const filtered = tournaments.filter(t =>
+      t.name.toLowerCase().includes(searchName.trim().toLowerCase())
+    );
+    setFilteredTournaments(filtered);
   }
 
   return (
     <div className="p-4">
       <h1 className="text-2xl font-bold mb-4">Tournois</h1>
+
+      {/* Création d’un tournoi */}
       <div className="mb-4">
         <input
           className="border p-2 mr-2"
-          placeholder="Nom du tournoi"
+          placeholder="Nom du nouveau tournoi"
           value={newTournamentName}
           onChange={(e) => setNewTournamentName(e.target.value)}
         />
-        <button className="bg-blue-500 text-white px-4 py-2" onClick={addTournament}>Créer</button>
+        <button className="bg-blue-500 text-white px-4 py-2" onClick={addTournament}>
+          Créer
+        </button>
       </div>
-      <ul>
-        {tournaments.map((t) => (
-          <li key={t.id}>
-            <button className="text-blue-700 underline" onClick={() => setSelectedTournament(t)}>
-              {t.name}
-            </button>
-          </li>
-        ))}
-      </ul>
+
+      {/* Recherche d’un tournoi */}
+      <div className="mb-4">
+        <input
+          className="border p-2 mr-2"
+          placeholder="Rechercher un tournoi"
+          value={searchName}
+          onChange={(e) => setSearchName(e.target.value)}
+        />
+        <button className="bg-gray-500 text-white px-4 py-2" onClick={searchTournament}>
+          Rechercher
+        </button>
+      </div>
+
+      {/* Résultats de recherche */}
+      <table className="w-full border mt-4">
+        <thead>
+          <tr className="bg-gray-100">
+            <th className="border px-4 py-2 text-left">Nom du tournoi</th>
+            <th className="border px-4 py-2">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filteredTournaments.map((tournament) => (
+            <tr key={tournament.id}>
+              <td className="border px-4 py-2">{tournament.name}</td>
+              <td className="border px-4 py-2 text-center">
+                <button
+                  className="text-blue-700 underline"
+                  onClick={() => setSelectedTournament(tournament)}
+                >
+                  Gérer
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
       {selectedTournament && <TournamentDetails tournament={selectedTournament} />}
     </div>
   );
