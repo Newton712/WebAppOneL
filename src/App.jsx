@@ -1,7 +1,7 @@
 // src/App.jsx
 import { useEffect, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import logo from './logo.jpg';
+import logo from './Logo.jpg';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
