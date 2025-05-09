@@ -207,7 +207,7 @@ function TournamentDetails({ tournament, onBack }) {
     setColor2('');
     fetchPlayers();
   }
-  
+
   async function savePlayer(id) {
     if (!editPlayer.name.trim()) return;
   
@@ -220,6 +220,37 @@ function TournamentDetails({ tournament, onBack }) {
   
     setEditPlayer(null);
     fetchPlayers();
+  }
+
+
+  async function importFromMelee() {
+    const match = meleeUrl.match(/\/(\d+)$/);
+    if (!match) return alert("Lien melee.gg invalide");
+    const meleeId = match[1];
+  
+    try {
+      const response = await fetch(`https://www.melee.gg/api/player/list/${meleeId}`);
+      if (!response.ok) throw new Error("Erreur API melee");
+      const data = await response.json();
+  
+      const existingNames = players.map(p => p.name);
+      const newPlayers = data.filter(p => !existingNames.includes(p.name));
+  
+      const insertData = newPlayers.map(p => ({
+        tournament_id: tournament.id,
+        name: p.name,
+        description: '',
+        color1: '',
+        color2: ''
+      }));
+  
+      await supabase.from('players').insert(insertData);
+      fetchPlayers();
+      alert(`${insertData.length} joueur(s) importé(s)`);
+    } catch (err) {
+      console.error(err);
+      alert("Erreur lors de l'import depuis melee.gg");
+    }
   }
 
   async function importFromMelee() {
@@ -276,13 +307,25 @@ function TournamentDetails({ tournament, onBack }) {
 
   async function handleAddRound() {
     if (!newRoundName.trim()) return;
+  
+    const parsedNumber = parseInt(newRoundName, 10);
+    if (isNaN(parsedNumber)) {
+      alert("Le numéro du round doit être un nombre.");
+      return;
+    }
+  
     const { data, error } = await supabase
       .from('rounds')
-      .insert({ tournament_id: tournament.id, name: newRoundName })
+      .insert({ tournament_id: tournament.id, number: parsedNumber })
       .select();
+  
     if (!error && data?.length) {
       setNewRoundName('');
-      fetchRounds();
+      setTablesByRound({});
+      await fetchRounds();
+    } else {
+      alert("Erreur lors de la création du round.");
+      console.error(error);
     }
   }
 
@@ -465,7 +508,7 @@ function TournamentDetails({ tournament, onBack }) {
       {/* Liste des rounds et des tables */}
       {rounds.map((round) => (
         <div key={round.id} className="mb-8 border-t border-gray-700 pt-4">
-          <h3 className="text-xl font-semibold mb-2">{round.name}</h3>
+          <h3 className="text-xl font-semibold mb-2">Round {round.number}</h3>
 
           {/* Formulaire d'ajout de table */}
           <div className="flex gap-2 mb-4 flex-wrap">
