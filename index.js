@@ -27,10 +27,19 @@ app.get('/fetch-melee', async (req, res) => {
       }
     });
 
+    const headersList = [...firstResponse.headers.entries()];
+    console.log('First response headers:', headersList);
+
     const redirectUrl = firstResponse.headers.get('location');
-    if (!redirectUrl) {
-      return res.status(502).json({ error: 'Redirect URL missing from melee.gg response' });
-    }
+
+   if (!redirectUrl) {
+  return res.status(502).json({ 
+    error: 'Redirect URL missing from melee.gg response',
+    headers: headersList,
+    status: firstResponse.status
+  });
+}
+
 
     const finalResponse = await fetch(redirectUrl);
     if (!finalResponse.ok) {
