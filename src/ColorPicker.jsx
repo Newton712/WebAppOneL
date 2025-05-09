@@ -17,14 +17,12 @@ const colors = [
 
 export default function ColorPicker({ selectedColor, onChange }) {
   return (
-    <div className="flex gap-1">
+    <div className="flex gap-2">
       {colors.map((color) => (
         <button
           key={color.name}
           onClick={() => onChange(color.name)}
-          className={`border-2 rounded p-1 ${
-            selectedColor === color.name ? 'border-blue-500' : 'border-transparent'
-          }`}
+          className={`p-1 border-2 rounded ${selectedColor === color.name ? 'border-blue-500' : 'border-transparent'}`}
         >
           <img src={color.img} alt={color.name} className="w-8 h-8 object-contain" />
         </button>
