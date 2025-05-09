@@ -21,6 +21,9 @@
   },
   "engines": {
   "node": "18.x"
+},
+"resolutions": {
+  "rollup": "3.29.4"
 }
 
 }
