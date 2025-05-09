@@ -24,6 +24,7 @@ export default function App() {
   const [newTournamentName, setNewTournamentName] = useState("");
   const [searchName, setSearchName] = useState("");
   const [meleeLink, setMeleeLink] = useState("");
+  
 
   useEffect(() => {
     fetchTournaments();
@@ -59,18 +60,19 @@ export default function App() {
       return;
     }
     const meleeId = idMatch[1];
-
+  
     try {
-      const response = await fetch(`https://www.melee.gg/api/player/list/${meleeId}`);
+      const response = await fetch(`/api/fetch-melee?meleeId=${meleeId}`);
+      if (!response.ok) throw new Error("Erreur lors de l'appel au proxy");
       const data = await response.json();
-
+  
       const tournamentName = `Import ${meleeId}`;
       const { data: newTournament } = await supabase
         .from('tournaments')
         .insert({ name: tournamentName })
         .select()
         .single();
-
+  
       const playerInserts = data.map(player => ({
         name: player.name,
         tournament_id: newTournament.id,
@@ -78,14 +80,14 @@ export default function App() {
         color1: '',
         color2: ''
       }));
-
+  
       await supabase.from('players').insert(playerInserts);
       fetchTournaments();
       setSelectedTournament(newTournament);
       setMeleeLink("");
     } catch (error) {
       console.error("Erreur d'import :", error);
-      alert("Échec de l'import.");
+      alert("Échec de l'import (voir console). CORS ou proxy invalide.");
     }
   }
 
