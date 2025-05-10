@@ -25,57 +25,6 @@ export default function App() {
     }
   }
 
-  async function handleImportOrRedirect() {
-  const match = meleeLink.match(/\/Tournament\/View\/(\\d+)/);
-  if (!match) {
-    alert("Lien invalide");
-    return;
-  }
-
-  const meleeId = match[1];
-  const tournamentName = `Import ${meleeId}`;
-
-  const { data: existing } = await supabase
-    .from('tournaments')
-    .select('*')
-    .eq('name', tournamentName)
-    .maybeSingle();
-
-  if (existing) {
-    setSelectedTournament(existing);
-    return;
-  }
-
-  try {
-    const response = await fetch(`/api/fetch-melee?meleeId=${meleeId}`);
-    if (!response.ok) throw new Error("Erreur proxy");
-
-    const data = await response.json();
-
-    const { data: newTournament } = await supabase
-      .from('tournaments')
-      .insert({ name: tournamentName })
-      .select()
-      .single();
-
-    const playerInserts = data.map(player => ({
-      name: player.name,
-      tournament_id: newTournament.id,
-      description: '',
-      color1: '',
-      color2: ''
-    }));
-
-    await supabase.from('players').insert(playerInserts);
-    fetchTournaments();
-    setSelectedTournament(newTournament);
-  } catch (error) {
-    console.error(error);
-    alert("Erreur lors de l'import.");
-  }
-}
-
-
   async function addTournament() {
     if (!newTournamentName.trim()) return;
     const { data, error } = await supabase
@@ -91,20 +40,33 @@ export default function App() {
     }
   }
 
-  async function importFromMelee() {
-    const idMatch = meleeLink.match(/\/(\d+)$/);
-    if (!idMatch) {
-      alert("Lien invalide.");
+  async function handleImportOrRedirect() {
+    const match = meleeLink.match(/\/Tournament\/View\/(\d+)/);
+    if (!match) {
+      alert("Lien invalide");
       return;
     }
-    const meleeId = idMatch[1];
+
+    const meleeId = match[1];
+    const tournamentName = `Import ${meleeId}`;
+
+    const { data: existing } = await supabase
+      .from('tournaments')
+      .select('*')
+      .eq('name', tournamentName)
+      .maybeSingle();
+
+    if (existing) {
+      setSelectedTournament(existing);
+      return;
+    }
 
     try {
       const response = await fetch(`/api/fetch-melee?meleeId=${meleeId}`);
-      if (!response.ok) throw new Error("Erreur lors de l'appel au proxy");
+      if (!response.ok) throw new Error("Erreur proxy");
+
       const data = await response.json();
 
-      const tournamentName = `Import ${meleeId}`;
       const { data: newTournament } = await supabase
         .from('tournaments')
         .insert({ name: tournamentName })
@@ -122,10 +84,9 @@ export default function App() {
       await supabase.from('players').insert(playerInserts);
       fetchTournaments();
       setSelectedTournament(newTournament);
-      setMeleeLink("");
     } catch (error) {
-      console.error("Erreur d'import :", error);
-      alert("Échec de l'import (voir console). CORS ou proxy invalide.");
+      console.error(error);
+      alert("Erreur lors de l'import.");
     }
   }
 
@@ -147,7 +108,7 @@ export default function App() {
       </header>
 
       {!selectedTournament && (
-       <TournamentSelector
+        <TournamentSelector
           newTournamentName={newTournamentName}
           setNewTournamentName={setNewTournamentName}
           addTournament={addTournament}
