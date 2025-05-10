@@ -255,35 +255,23 @@ function TournamentDetails({ tournament, onBack }) {
     }
   }
 
-  async function importFromMelee() {
-    const match = meleeUrl.match(/\/(\d+)$/);
-    if (!match) return alert("Lien melee.gg invalide");
-    const meleeId = match[1];
-  
-    try {
-      const response = await fetch(`https://www.melee.gg/api/player/list/${meleeId}`);
-      if (!response.ok) throw new Error("Erreur API melee");
-      const data = await response.json();
-  
-      const existingNames = players.map(p => p.name);
-      const newPlayers = data.filter(p => !existingNames.includes(p.name));
-  
-      const insertData = newPlayers.map(p => ({
-        tournament_id: tournament.id,
-        name: p.name,
-        description: '',
-        color1: '',
-        color2: ''
-      }));
-  
-      await supabase.from('players').insert(insertData);
-      fetchPlayers();
-      alert(`${insertData.length} joueur(s) importé(s)`);
-    } catch (err) {
-      console.error(err);
-      alert("Erreur lors de l'import depuis melee.gg");
-    }
+  async function importFromMelee()  {
+  const match = meleeUrl.match(/https?:\/\/www\.melee\.gg\/Tournament\/View\/(\d+)/);
+  if (!match) return alert("Lien melee.gg invalide");
+
+  const url = `https://www.melee.gg/Tournament/View/${match[1]}`;
+
+  try {
+    const response = await fetch(`https://ton-proxy.onrender.com/api/import-melee?url=${encodeURIComponent(url)}`);
+    if (!response.ok) throw new Error("Erreur proxy melee.gg");
+
+    fetchPlayers(); // recharger les joueurs
+    alert("Import réussi depuis melee.gg");
+  } catch (err) {
+    console.error(err);
+    alert("Erreur lors de l'import (scraping)");
   }
+}
 
   useEffect(() => {
     fetchRounds();
