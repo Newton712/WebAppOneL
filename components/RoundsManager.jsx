@@ -1,36 +1,17 @@
-// src/TournamentDetails.jsx
+// components/RoundsManager.jsx
 import { useEffect, useState } from 'react';
-import { createClient } from '@supabase/supabase-js';
-import ColorDropdown from './ColorDropdown';
-import jaune from './assets/colors/jaune.png';
-import mauve from './assets/colors/mauve.png';
-import vert from './assets/colors/vert.png';
-import rouge from './assets/colors/rouge.png';
-import bleu from './assets/colors/bleu.png';
-import gris from './assets/colors/gris.png';
+import { supabase } from '../lib/supabase';
+import PlayersList from './PlayersList';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-const supabase = createClient(supabaseUrl, supabaseKey);
-
-const colorImages = { jaune, mauve, vert, rouge, bleu, gris };
-
-export default function TournamentDetails({ tournament, onBack }) {
+export default function RoundsManager({ tournament, players }) {
   const [rounds, setRounds] = useState([]);
   const [tablesByRound, setTablesByRound] = useState({});
-  const [players, setPlayers] = useState([]);
-  const [playerName, setPlayerName] = useState('');
-  const [description, setDescription] = useState('');
-  const [color1, setColor1] = useState('');
-  const [color2, setColor2] = useState('');
-  const [meleeUrl, setMeleeUrl] = useState('');
-  const [editPlayer, setEditPlayer] = useState(null);
   const [newRoundName, setNewRoundName] = useState('');
   const [newTable, setNewTable] = useState({});
+  const [editPlayer, setEditPlayer] = useState(null);
 
   useEffect(() => {
     fetchRounds();
-    fetchPlayers();
   }, []);
 
   async function fetchRounds() {
@@ -49,81 +30,40 @@ export default function TournamentDetails({ tournament, onBack }) {
     }
   }
 
-  async function fetchPlayers() {
-    const { data } = await supabase
-      .from('players')
-      .select('*')
-      .eq('tournament_id', tournament.id);
-    setPlayers(data || []);
-  }
-
-  async function addPlayer() {
-    if (!playerName.trim()) return;
-    await supabase.from('players').insert({
-      tournament_id: tournament.id,
-      name: playerName.trim(),
-      description: description.trim() || null,
-      color1: color1 || null,
-      color2: color2 || null
-    });
-    setPlayerName('');
-    setDescription('');
-    setColor1('');
-    setColor2('');
-    fetchPlayers();
-  }
-
   async function savePlayer(id) {
     if (!editPlayer.name.trim()) return;
+
     await supabase.from('players').update({
       name: editPlayer.name.trim(),
       description: editPlayer.description?.trim() || null,
       color1: editPlayer.color1 || null,
       color2: editPlayer.color2 || null
     }).eq('id', id);
+
     setEditPlayer(null);
-    fetchPlayers();
-  }
-
-  async function importFromMelee() {
-    const match = meleeUrl.match(/\/(\d+)$/);
-    if (!match) return alert("Lien melee.gg invalide");
-    const meleeId = match[1];
-
-    try {
-      const response = await fetch(`https://www.melee.gg/api/player/list/${meleeId}`);
-      if (!response.ok) throw new Error("Erreur API melee");
-      const data = await response.json();
-
-      const existingNames = players.map(p => p.name);
-      const newPlayers = data.filter(p => !existingNames.includes(p.name));
-
-      const insertData = newPlayers.map(p => ({
-        tournament_id: tournament.id,
-        name: p.name,
-        description: '',
-        color1: '',
-        color2: ''
-      }));
-
-      await supabase.from('players').insert(insertData);
-      fetchPlayers();
-      alert(`${insertData.length} joueur(s) importé(s)`);
-    } catch (err) {
-      console.error(err);
-      alert("Erreur lors de l'import depuis melee.gg");
-    }
   }
 
   async function handleAddRound() {
     if (!newRoundName.trim()) return;
+
+    const parsedNumber = parseInt(newRoundName, 10);
+    if (isNaN(parsedNumber)) {
+      alert("Le numéro du round doit être un nombre.");
+      return;
+    }
+
     const { data, error } = await supabase
       .from('rounds')
-      .insert({ tournament_id: tournament.id, name: newRoundName })
+      .insert({ tournament_id: tournament.id, number: parsedNumber })
       .select();
+
     if (!error && data?.length) {
       setNewRoundName('');
-      fetchRounds();
+      setTablesByRound({});
+      await fetchRounds();
+    } else {
+      alert("Erreur lors de la création du round.");
+      console.error(error);
     }
   }
 
@@ -152,8 +92,13 @@ export default function TournamentDetails({ tournament, onBack }) {
   }
 
   return (
-    <div className="text-white">
-      <h2 className="text-2xl font-bold mb-4 text-center">Détails du tournoi : {tournament.name}</h2>
+    <div>
+      <PlayersList
+        players={players}
+        editPlayer={editPlayer}
+        setEditPlayer={setEditPlayer}
+        savePlayer={savePlayer}
+      />
 
       {/* Ajouter un round */}
       <div className="mb-6">
@@ -171,7 +116,7 @@ export default function TournamentDetails({ tournament, onBack }) {
       {/* Liste des rounds et des tables */}
       {rounds.map((round) => (
         <div key={round.id} className="mb-8 border-t border-gray-700 pt-4">
-          <h3 className="text-xl font-semibold mb-2">{round.name}</h3>
+          <h3 className="text-xl font-semibold mb-2">Round {round.number}</h3>
 
           {/* Formulaire d'ajout de table */}
           <div className="flex gap-2 mb-4 flex-wrap">
@@ -262,12 +207,6 @@ export default function TournamentDetails({ tournament, onBack }) {
           </table>
         </div>
       ))}
-
-      <div className="mt-8 text-center">
-        <button onClick={onBack} className="bg-red-500 px-4 py-2 rounded">
-          Retour
-        </button>
-      </div>
     </div>
   );
 }
