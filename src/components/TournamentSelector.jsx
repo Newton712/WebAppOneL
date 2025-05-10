@@ -1,4 +1,3 @@
-// components/TournamentSelector.jsx
 import { useState } from 'react';
 
 export default function TournamentSelector({
@@ -9,7 +8,10 @@ export default function TournamentSelector({
   setSearchName,
   searchTournament,
   filteredTournaments,
-  setSelectedTournament
+  setSelectedTournament,
+  meleeLink,
+  setMeleeLink,
+  handleImportOrRedirect
 }) {
   return (
     <div className="flex flex-col items-center">
@@ -23,6 +25,22 @@ export default function TournamentSelector({
         />
         <button className="bg-blue-500 text-white px-4 py-2 rounded" onClick={addTournament}>
           Créer
+        </button>
+      </div>
+
+      {/* URL melee.gg, ajout ou consultation des données */}
+      <div className="mb-4 flex gap-2 w-full">
+        <input
+          className="border p-2 rounded w-full"
+          placeholder="Coller un lien melee.gg ici"
+          value={meleeLink}
+          onChange={(e) => setMeleeLink(e.target.value)}
+        />
+        <button
+          className="bg-green-600 text-white px-4 py-2 rounded"
+          onClick={handleImportOrRedirect}
+        >
+          Importer ou Ouvrir
         </button>
       </div>
 
@@ -68,3 +86,4 @@ export default function TournamentSelector({
     </div>
   );
 }
+
