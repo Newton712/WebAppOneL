@@ -1,10 +1,10 @@
 import Select from 'react-select';
-import jaune from './assets/colors/jaune.png';
-import mauve from './assets/colors/mauve.png';
-import vert from './assets/colors/vert.png';
-import rouge from './assets/colors/rouge.png';
-import bleu from './assets/colors/bleu.png';
-import gris from './assets/colors/gris.png';
+import jaune from '../assets/colors/jaune.png';
+import mauve from '../assets/colors/mauve.png';
+import vert from '../assets/colors/vert.png';
+import rouge from '../assets/colors/rouge.png';
+import bleu from '../assets/colors/bleu.png';
+import gris from '../assets/colors/gris.png';
 
 const colorImages = {
   jaune, mauve, vert, rouge, bleu, gris,
