@@ -1,13 +1,9 @@
 // src/App.jsx
 import './index.css';
 import { useEffect, useState } from 'react';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from './lib/supabase';
 import TournamentDetails from './components/TournamentDetails';
 import TournamentSelector from './components/TournamentSelector';
-
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default function App() {
   const [tournaments, setTournaments] = useState([]);
