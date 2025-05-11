@@ -1,39 +1,54 @@
 // api/fetch-melee.js
-import { JSDOM } from 'jsdom';
+import puppeteer from 'puppeteer';
 
 export default async function handler(req, res) {
   const { meleeId } = req.query;
   if (!meleeId) return res.status(400).json({ error: 'Missing meleeId' });
 
-  const meleeUrl = `https://www.melee.gg/Tournament/View/${meleeId}`;
+  const url = `https://www.melee.gg/Tournament/View/${meleeId}`;
 
   try {
-    const htmlRes = await fetch(meleeUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0'
-      }
+    const browser = await puppeteer.launch({
+      headless: 'new',
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
+    });
+    const page = await browser.newPage();
+
+    await page.goto(url, { waitUntil: 'domcontentloaded' });
+
+    const data = await page.evaluate(() => {
+      const title = document.querySelector('h3.mb-1')?.innerText.trim() || null;
+      const rows = document.querySelectorAll('#tournament-pairings-table tbody tr');
+
+      const matches = [];
+      const playersSet = new Set();
+
+      rows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        if (cells.length >= 2) {
+          const player1 = cells[0].innerText.trim();
+          const player2 = cells[1].innerText.trim();
+          if (player1 && player2) {
+            matches.push({ player1, player2 });
+            playersSet.add(player1);
+            playersSet.add(player2);
+          }
+        }
+      });
+
+      const players = Array.from(playersSet).map(name => ({ name }));
+      return { title, players, matches };
     });
 
-    if (!htmlRes.ok) {
-      return res.status(htmlRes.status).json({ error: 'Erreur fetch HTML', status: htmlRes.status });
+    await browser.close();
+
+    if (!data.title) {
+      return res.status(404).json({ error: 'Aucun tournoi trouvé.' });
     }
 
-    const html = await htmlRes.text();
-    const dom = new JSDOM(html);
-    const document = dom.window.document;
-
-    // Exemple : extraire tous les joueurs (à adapter à la structure réelle)
-    const playerElements = document.querySelectorAll('.player-list .player-name');
-    const players = Array.from(playerElements).map(el => ({ name: el.textContent.trim() }));
-
-    if (!players.length) {
-      console.warn('Aucun joueur trouvé');
-      return res.status(500).json({ error: 'Aucun joueur trouvé' });
-    }
-
-    res.status(200).json(players);
-  } catch (err) {
-    console.error('Scraping error:', err);
-    res.status(500).json({ error: 'Erreur lors du scraping', details: err.message });
+    res.status(200).json(data);
+  } catch (error) {
+    console.error('Erreur Puppeteer :', error);
+    res.status(500).json({ error: 'Erreur lors du scraping avec Puppeteer.' });
   }
 }
