@@ -41,54 +41,61 @@ export default function App() {
   }
 
   async function handleImportOrRedirect() {
-    const match = meleeLink.match(/\/Tournament\/View\/(\d+)/);
-    if (!match) {
-      alert("Lien invalide");
-      return;
-    }
-
-    const meleeId = match[1];
-    const tournamentName = `Import ${meleeId}`;
-
-    const { data: existing } = await supabase
-      .from('tournaments')
-      .select('*')
-      .eq('name', tournamentName)
-      .maybeSingle();
-
-    if (existing) {
-      setSelectedTournament(existing);
-      return;
-    }
-
-    try {
-      const response = await fetch(`/api/fetch-melee?meleeId=${meleeId}`);
-      if (!response.ok) throw new Error("Erreur proxy");
-
-      const data = await response.json();
-
-      const { data: newTournament } = await supabase
-        .from('tournaments')
-        .insert({ name: tournamentName })
-        .select()
-        .single();
-
-      const playerInserts = data.map(player => ({
-        name: player.name,
-        tournament_id: newTournament.id,
-        description: '',
-        color1: '',
-        color2: ''
-      }));
-
-      await supabase.from('players').insert(playerInserts);
-      fetchTournaments();
-      setSelectedTournament(newTournament);
-    } catch (error) {
-      console.error(error);
-      alert("Erreur lors de l'import.");
-    }
+  const match = meleeLink.match(/\/Tournament\/View\/(\d+)/);
+  if (!match) {
+    alert("Lien invalide");
+    return;
   }
+
+  const meleeId = match[1];
+  const tournamentName = `Import ${meleeId}`;
+
+  const { data: existing } = await supabase
+    .from('tournaments')
+    .select('*')
+    .eq('name', tournamentName)
+    .maybeSingle();
+
+  if (existing) {
+    setSelectedTournament(existing);
+    return;
+  }
+
+  try {
+    const response = await fetch(`/api/fetch-melee?meleeId=${meleeId}`);
+
+    const contentType = response.headers.get("content-type");
+    if (!response.ok || !contentType?.includes("application/json")) {
+      const errorText = await response.text();
+      console.error("Réponse invalide (pas JSON) :", errorText);
+      throw new Error("Réponse invalide du serveur proxy.");
+    }
+
+    const data = await response.json();
+
+    const { data: newTournament } = await supabase
+      .from('tournaments')
+      .insert({ name: tournamentName })
+      .select()
+      .single();
+
+    const playerInserts = data.map(player => ({
+      name: player.name,
+      tournament_id: newTournament.id,
+      description: '',
+      color1: '',
+      color2: ''
+    }));
+
+    await supabase.from('players').insert(playerInserts);
+    fetchTournaments();
+    setSelectedTournament(newTournament);
+  } catch (error) {
+    console.error("Erreur lors de l'import :", error);
+    alert("Erreur lors de l'import. Voir la console.");
+  }
+}
+
 
   function searchTournament() {
     const filtered = tournaments.filter(t =>
