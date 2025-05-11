@@ -1,5 +1,6 @@
 // api/fetch-melee.js
-import puppeteer from 'puppeteer';
+import chromium from 'chrome-aws-lambda';
+import puppeteer from 'puppeteer-core';
 
 export default async function handler(req, res) {
   const { meleeId } = req.query;
@@ -9,17 +10,17 @@ export default async function handler(req, res) {
 
   try {
     const browser = await puppeteer.launch({
-      headless: 'new',
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
+      args: chromium.args,
+      executablePath: await chromium.executablePath,
+      headless: chromium.headless
     });
-    const page = await browser.newPage();
 
+    const page = await browser.newPage();
     await page.goto(url, { waitUntil: 'domcontentloaded' });
 
     const data = await page.evaluate(() => {
       const title = document.querySelector('h3.mb-1')?.innerText.trim() || null;
       const rows = document.querySelectorAll('#tournament-pairings-table tbody tr');
-
       const matches = [];
       const playersSet = new Set();
 
