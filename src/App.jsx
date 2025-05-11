@@ -40,20 +40,17 @@ export default function App() {
     }
   }
 
-  async function handleImportOrRedirect() {
+async function handleImportOrRedirect() {
   const match = meleeLink.match(/\/Tournament\/View\/(\d+)/);
-  if (!match) {
-    alert("Lien invalide");
-    return;
-  }
+  if (!match) return alert("Lien invalide");
 
   const meleeId = match[1];
-  const tournamentName = `Import ${meleeId}`;
 
+  // 🔍 Vérifie si ce tournoi est déjà importé
   const { data: existing } = await supabase
     .from('tournaments')
     .select('*')
-    .eq('name', tournamentName)
+    .eq('melee_id', meleeId)
     .maybeSingle();
 
   if (existing) {
@@ -63,24 +60,18 @@ export default function App() {
 
   try {
     const response = await fetch(`/api/fetch-melee?meleeId=${meleeId}`);
+    if (!response.ok) throw new Error("Erreur lors du scraping");
 
-    const contentType = response.headers.get("content-type");
-    if (!response.ok || !contentType?.includes("application/json")) {
-      const errorText = await response.text();
-      console.error("Réponse invalide (pas JSON) :", errorText);
-      throw new Error("Réponse invalide du serveur proxy.");
-    }
-
-    const data = await response.json();
+    const { players, title } = await response.json();
 
     const { data: newTournament } = await supabase
       .from('tournaments')
-      .insert({ name: tournamentName })
+      .insert({ name: title, melee_id: meleeId })
       .select()
       .single();
 
-    const playerInserts = data.map(player => ({
-      name: player.name,
+    const playerInserts = players.map(p => ({
+      name: p.name,
       tournament_id: newTournament.id,
       description: '',
       color1: '',
@@ -88,11 +79,14 @@ export default function App() {
     }));
 
     await supabase.from('players').insert(playerInserts);
+
+    // TODO: Scraper les rounds et matchs aussi et les insérer
+
     fetchTournaments();
     setSelectedTournament(newTournament);
   } catch (error) {
-    console.error("Erreur lors de l'import :", error);
-    alert("Erreur lors de l'import. Voir la console.");
+    console.error(error);
+    alert("Erreur lors de l'import.");
   }
 }
 

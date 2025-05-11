@@ -1,37 +1,27 @@
+// /api/fetch-melee.js
+import { JSDOM } from 'jsdom';
+
 export default async function handler(req, res) {
   const { meleeId } = req.query;
-  if (!meleeId) {
-    return res.status(400).json({ error: 'Paramètre meleeId manquant' });
-  }
-
-  const targetUrl = `https://www.melee.gg/api/player/list/${meleeId}`;
+  if (!meleeId) return res.status(400).json({ error: 'Missing meleeId' });
 
   try {
-    const proxyRes = await fetch(targetUrl, {
-      method: 'GET',
-      headers: {
-        'User-Agent': 'Mozilla/5.0',
-        'Accept': 'application/json',
-      }
-    });
+    const response = await fetch(`https://www.melee.gg/Tournament/View/${meleeId}`);
+    if (!response.ok) throw new Error("Failed to fetch melee.gg");
 
-    const contentType = proxyRes.headers.get('content-type');
+    const html = await response.text();
+    const dom = new JSDOM(html);
+    const doc = dom.window.document;
 
-    if (!proxyRes.ok || !contentType?.includes('application/json')) {
-      const errorText = await proxyRes.text();
-      return res.status(proxyRes.status || 500).json({
-        error: 'Réponse du serveur melee.gg invalide ou non JSON.',
-        status: proxyRes.status,
-        details: errorText.slice(0, 500) // Coupe pour éviter surcharge
-      });
-    }
+    // 🧍 Scrape les noms de joueurs
+    const playerElements = doc.querySelectorAll(".player-name"); // Ajuste selon la classe réelle
+    const players = Array.from(playerElements).map(el => ({ name: el.textContent.trim() }));
 
-    const data = await proxyRes.json();
-    return res.status(200).json(data);
-  } catch (err) {
-    return res.status(500).json({
-      error: 'Erreur réseau ou proxy',
-      details: err.message
-    });
+    // Tu peux aussi extraire le nom du tournoi, rounds, matchs ici si dispo
+    const title = doc.querySelector("h1")?.textContent?.trim() || `Import ${meleeId}`;
+
+    return res.status(200).json({ players, title });
+  } catch (error) {
+    return res.status(500).json({ error: 'Scraping failed', details: error.message });
   }
 }
