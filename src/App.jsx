@@ -42,11 +42,14 @@ export default function App() {
 
 async function handleImportOrRedirect() {
   const match = meleeLink.match(/\/Tournament\/View\/(\d+)/);
-  if (!match) return alert("Lien invalide");
+  if (!match) {
+    alert("Lien melee.gg invalide");
+    return;
+  }
 
   const meleeId = match[1];
 
-  // 🔍 Vérifie si ce tournoi est déjà importé
+  // Vérifie si le tournoi existe déjà via meleeId
   const { data: existing } = await supabase
     .from('tournaments')
     .select('*')
@@ -60,35 +63,68 @@ async function handleImportOrRedirect() {
 
   try {
     const response = await fetch(`/api/fetch-melee?meleeId=${meleeId}`);
-    if (!response.ok) throw new Error("Erreur lors du scraping");
+    if (!response.ok) throw new Error("Erreur proxy melee");
 
-    const { players, title } = await response.json();
+    const { title, players, matches } = await response.json();
 
-    const { data: newTournament } = await supabase
+    // Crée le tournoi
+    const { data: tournament, error: tError } = await supabase
       .from('tournaments')
-      .insert({ name: title, melee_id: meleeId })
+      .insert({ name: title || `Import ${meleeId}`, melee_id: meleeId })
       .select()
       .single();
 
+    if (tError) throw new Error("Erreur création tournoi");
+
+    // Crée les joueurs
     const playerInserts = players.map(p => ({
       name: p.name,
-      tournament_id: newTournament.id,
+      tournament_id: tournament.id,
       description: '',
       color1: '',
       color2: ''
     }));
+    const { data: insertedPlayers } = await supabase
+      .from('players')
+      .insert(playerInserts)
+      .select();
 
-    await supabase.from('players').insert(playerInserts);
+    // Crée un round par défaut
+    const { data: round } = await supabase
+      .from('rounds')
+      .insert({ tournament_id: tournament.id, number: 1, name: 'Round 1' })
+      .select()
+      .single();
 
-    // TODO: Scraper les rounds et matchs aussi et les insérer
+    // Crée les tables (matchs)
+    const playersMap = {};
+    insertedPlayers.forEach(p => { playersMap[p.name] = p.id });
+
+    const tableInserts = matches.map((m, i) => ({
+      round_id: round.id,
+      player1_id: playersMap[m.player1] || null,
+      player2_id: playersMap[m.player2] || null,
+      color1_player1: '',
+      color2_player1: '',
+      color1_player2: '',
+      color2_player2: '',
+      table_color1: '',
+      table_color2: '',
+      table_color3: '',
+      table_color4: '',
+      number: i + 1
+    }));
+
+    await supabase.from('tables').insert(tableInserts);
 
     fetchTournaments();
-    setSelectedTournament(newTournament);
-  } catch (error) {
-    console.error(error);
-    alert("Erreur lors de l'import.");
+    setSelectedTournament(tournament);
+  } catch (err) {
+    console.error(err);
+    alert("Erreur lors de l'import depuis melee.gg");
   }
 }
+
 
 
   function searchTournament() {
