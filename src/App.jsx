@@ -61,7 +61,7 @@ async function handleImportOrRedirect() {
   }
 
   try {
-    const apiUrl = "http://89.168.63.250:80";
+    const apiUrl = "https://newton712.duckdns.org";
 
     for (const type of ["tournament", "players", "tables"]) {
       const res = await fetch(`${apiUrl}/import/${type}`, { method: "POST" });
