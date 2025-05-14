@@ -61,59 +61,30 @@ async function handleImportOrRedirect() {
   }
 
   try {
-    const response = await fetch(`/api/fetch-melee?meleeId=${meleeId}`);
-    const result = await response.json();
+    const apiUrl = "http://89.168.63.250:80";
 
-    if (!response.ok || result.error) {
-      throw new Error(result.error || "Erreur scraping");
+    for (const type of ["tournament", "players", "tables"]) {
+      const res = await fetch(`${apiUrl}/import/${type}`, { method: "POST" });
+      if (!res.ok) throw new Error(`Erreur lors de l'import ${type}`);
     }
 
-    const { title, players, matches } = result;
-
-    const { data: newTournament } = await supabase
+    const { data: inserted } = await supabase
       .from('tournaments')
-      .insert({ name: title, melee_id: meleeId })
-      .select()
-      .single();
+      .select('*')
+      .eq('melee_id', meleeId)
+      .maybeSingle();
 
-    const playerMap = new Map();
-    for (const player of players) {
-      const { data: inserted } = await supabase
-        .from('players')
-        .insert({
-          tournament_id: newTournament.id,
-          name: player.name,
-        })
-        .select()
-        .single();
-      playerMap.set(player.name, inserted.id);
+    if (inserted) {
+      setSelectedTournament(inserted);
+    } else {
+      throw new Error("Le tournoi n'a pas été retrouvé dans Supabase.");
     }
-
-    const { data: round } = await supabase
-      .from('rounds')
-      .insert({
-        tournament_id: newTournament.id,
-        number: 1,
-        name: 'Round 1'
-      })
-      .select()
-      .single();
-
-    const tables = matches.map((m, i) => ({
-      round_id: round.id,
-      player1_id: playerMap.get(m.player1),
-      player2_id: playerMap.get(m.player2),
-      number: i + 1
-    }));
-
-    await supabase.from('tables').insert(tables);
-
-    setSelectedTournament(newTournament);
   } catch (err) {
     console.error(err);
-    alert("Erreur lors de l'import.");
+    alert("Erreur lors de l'import automatique depuis la VM.");
   }
 }
+
 
 
 
