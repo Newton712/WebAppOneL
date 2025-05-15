@@ -19,7 +19,7 @@ export default function TournamentDetails({ tournament, onBack }) {
     const { data } = await supabase
       .from('players')
       .select('*')
-      .eq('tournament_id', tournament.id);
+      .eq('tournament_id', tournament.tournament_id);
     setPlayers(data || []);
   }
 
@@ -27,7 +27,7 @@ export default function TournamentDetails({ tournament, onBack }) {
     if (!playerName.trim()) return;
 
     await supabase.from('players').insert({
-      tournament_id: tournament.id,
+      tournament_id: tournament.tournament_id,
       name: playerName.trim(),
       description: description.trim() || null,
       color1: color1 || null,
