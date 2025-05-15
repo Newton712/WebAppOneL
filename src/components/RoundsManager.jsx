@@ -38,8 +38,8 @@ async function savePlayer(id) {
     .update({
       name: editPlayer.name.trim(),
       comments: editPlayer.comments?.trim() || null,
-      deckcolor1: editPlayer.deckcolor1 || null,
-      deckcolor2: editPlayer.deckcolor2 || null
+      deckcolor1: editPlayer.Deckcolor1 || null,
+      deckcolor2: editPlayer.Deckcolor2 || null
     })
     .eq('id', id);
 
@@ -49,7 +49,11 @@ async function savePlayer(id) {
     return;
   }
 
-  fetchPlayers(); // actualiser
+  // 🔁 Rafraîchir la liste
+  if (typeof fetchPlayers === 'function') {
+    await fetchPlayers();
+  }
+
   setEditPlayer(null);
 }
 
