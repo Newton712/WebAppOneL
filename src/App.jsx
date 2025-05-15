@@ -25,20 +25,27 @@ export default function App() {
     }
   }
 
-  async function addTournament() {
-    if (!newTournamentName.trim()) return;
-    const { data, error } = await supabase
-      .from('tournaments')
-      .insert({ name: newTournamentName })
-      .select()
-      .single();
-    if (!error && data) {
-      setNewTournamentName("");
-      setTournaments(prev => [...prev, data]);
-      setFilteredTournaments(prev => [...prev, data]);
-      setSelectedTournament(data);
-    }
+async function addTournament() {
+  if (!newTournamentName.trim()) return;
+  const newTournament = {
+    tournament_id: crypto.randomUUID(), // ou ton propre identifiant
+    tournament_name: newTournamentName,
+    tournament_date: new Date().toISOString(), // à adapter si nécessaire
+  };
+
+  const { data, error } = await supabase
+    .from('tournaments')
+    .insert(newTournament)
+    .select()
+    .single();
+
+  if (!error && data) {
+    setNewTournamentName("");
+    setTournaments(prev => [...prev, data]);
+    setFilteredTournaments(prev => [...prev, data]);
+    setSelectedTournament(data);
   }
+}
 
 async function handleImportOrRedirect() {
   const match = meleeLink.match(/\/Tournament\/View\/(\d+)/);
