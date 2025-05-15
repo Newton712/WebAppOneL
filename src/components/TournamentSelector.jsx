@@ -68,8 +68,8 @@ export default function TournamentSelector({
           </thead>
           <tbody>
             {filteredTournaments.map((tournament) => (
-              <tr key={tournament.id}>
-                <td className="border px-4 py-2">{tournament.name}</td>
+              <tr key={tournament.tournament_id}>
+                <td className="border px-4 py-2">{tournament.tournament_name }</td>
                 <td className="border px-4 py-2">
                   <button
                     className="text-blue-700 underline"
