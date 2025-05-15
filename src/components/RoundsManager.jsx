@@ -33,13 +33,24 @@ export default function RoundsManager({ tournament, players }) {
 async function savePlayer(id) {
   if (!editPlayer.name.trim()) return;
 
-  await supabase.from('players').update({
-    name: editPlayer.name.trim(),
-    comments: editPlayer.comments?.trim() || null,
-    Deckcolor1: editPlayer.Deckcolor1 || null,
-    Deckcolor2: editPlayer.Deckcolor2 || null
-  }).eq('id', id);
+  const { error } = await supabase
+    .from('players')
+    .update({
+      name: editPlayer.name.trim(),
+      comments: editPlayer.comments?.trim() || null,
+      Deckcolor1: editPlayer.Deckcolor1 || null,
+      Deckcolor2: editPlayer.Deckcolor2 || null
+    })
+    .eq('id', id);
 
+  if (error) {
+    console.error("Erreur Supabase :", error);
+    alert("La sauvegarde du joueur a échoué.");
+    return;
+  }
+
+  // Recharge les joueurs
+  fetchPlayers(); // ou le bon nom de ta fonction
   setEditPlayer(null);
 }
 
