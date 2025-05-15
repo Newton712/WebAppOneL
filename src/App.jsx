@@ -94,12 +94,12 @@ async function handleImportOrRedirect() {
 
 
 
-  function searchTournament() {
-    const filtered = tournaments.filter(t =>
-      t.name.toLowerCase().includes(searchName.trim().toLowerCase())
-    );
-    setFilteredTournaments(filtered);
-  }
+ function searchTournament() {
+  const filtered = tournaments.filter(t =>
+    t.tournament_name.toLowerCase().includes(searchName.trim().toLowerCase())
+  );
+  setFilteredTournaments(filtered);
+}
 
   function backToList() {
     setSelectedTournament(null);
