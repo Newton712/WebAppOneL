@@ -35,9 +35,9 @@ export default function RoundsManager({ tournament, players }) {
 
     await supabase.from('players').update({
       name: editPlayer.name.trim(),
-      description: editPlayer.description?.trim() || null,
-      color1: editPlayer.color1 || null,
-      color2: editPlayer.color2 || null
+      description: editPlayer.comments?.trim() || null,
+      color1: editPlayer.Deckcolor1 || null,
+      color2: editPlayer.Deckcolor2 || null
     }).eq('id', id);
 
     setEditPlayer(null);
