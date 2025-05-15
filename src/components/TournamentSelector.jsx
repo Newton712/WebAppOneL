@@ -63,6 +63,7 @@ export default function TournamentSelector({
           <thead className="bg-[#2a2a2a] text-gray-100 uppercase text-xs tracking-wider">
             <tr>
               <th className="px-4 py-3 border-b border-gray-700">Nom du tournoi</th>
+              <th className="px-4 py-3 border-b border-gray-700">Date et Heure</th>
               <th className="px-4 py-3 border-b border-gray-700">Action</th>
             </tr>
           </thead>
@@ -70,6 +71,7 @@ export default function TournamentSelector({
             {filteredTournaments.map((tournament) => (
               <tr key={tournament.tournament_id}>
                 <td className="border px-4 py-2">{tournament.tournament_name }</td>
+                <td className="border px-4 py-2">{tournament.tournament_date }</td>
                 <td className="border px-4 py-2">
                   <button
                     className="text-blue-700 underline"
