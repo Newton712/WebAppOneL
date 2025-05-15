@@ -53,6 +53,17 @@ async function savePlayer(id) {
   setEditPlayer(null);
 }
 
+async function fetchPlayers() {
+  const { data, error } = await supabase
+    .from('players')
+    .select('*')
+    .eq('tournament_id', selectedTournament.tournament_id);
+
+  if (!error) {
+    setPlayers(data);
+  }
+}
+
   async function handleAddRound() {
     if (!newRoundName.trim()) return;
 
