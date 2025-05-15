@@ -61,10 +61,10 @@ async function handleImportOrRedirect() {
   }
 
   try {
-    const apiUrl = "https://newton712.duckdns.org";
+    const apiUrl = import.meta.env.VITE_API_URL;;
 
     for (const type of ["tournament", "players", "tables"]) {
-      const res = await fetch(`${apiUrl}/import/${type}`, { method: "POST" });
+      const res = await fetch(`${apiUrl}/import/players`, { method: "POST" });
       if (!res.ok) throw new Error(`Erreur lors de l'import ${type}`);
     }
 
