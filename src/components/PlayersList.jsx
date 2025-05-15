@@ -54,8 +54,8 @@ export default function PlayersList({ players, editPlayer, setEditPlayer, savePl
                   {isEditing ? (
                     <select
                       className="bg-[#1e1e1e] text-white border border-gray-600 rounded px-2 py-1"
-                      value={editPlayer.Deckcolor1 || ''}
-                      onChange={(e) => setEditPlayer({ ...editPlayer, Deckcolor1: e.target.value })}
+                      value={editPlayer.deckcolor1 || ''}
+                      onChange={(e) => setEditPlayer({ ...editPlayer, deckcolor1: e.target.value })}
                     >
                       <option value="">--</option>
                       {Object.keys(colorImages).map(c => (
@@ -63,15 +63,15 @@ export default function PlayersList({ players, editPlayer, setEditPlayer, savePl
                       ))}
                     </select>
                   ) : (
-                    p.Deckcolor1 && <img src={colorImages[p.Deckcolor1]} alt={p.Deckcolor1} className="w-5 h-5 inline-block rounded" />
+                    p.deckcolor1 && <img src={colorImages[p.deckcolor1]} alt={p.deckcolor1} className="w-5 h-5 inline-block rounded" />
                   )}
                 </td>
                 <td className="px-4 py-2 border-b border-gray-700 text-center">
                   {isEditing ? (
                     <select
                       className="bg-[#1e1e1e] text-white border border-gray-600 rounded px-2 py-1"
-                      value={editPlayer.Deckcolor2 || ''}
-                      onChange={(e) => setEditPlayer({ ...editPlayer, Deckcolor2: e.target.value })}
+                      value={editPlayer.deckcolor2 || ''}
+                      onChange={(e) => setEditPlayer({ ...editPlayer, deckcolor2: e.target.value })}
                     >
                       <option value="">--</option>
                       {Object.keys(colorImages).map(c => (
@@ -79,7 +79,7 @@ export default function PlayersList({ players, editPlayer, setEditPlayer, savePl
                       ))}
                     </select>
                   ) : (
-                    p.Deckcolor2 && <img src={colorImages[p.Deckcolor2]} alt={p.Deckcolor2} className="w-5 h-5 inline-block rounded" />
+                    p.deckcolor2 && <img src={colorImages[p.deckcolor2]} alt={p.deckcolor2} className="w-5 h-5 inline-block rounded" />
                   )}
                 </td>
                 <td className="px-4 py-2 border-b border-gray-700 text-center">

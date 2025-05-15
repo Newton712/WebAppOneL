@@ -38,8 +38,8 @@ async function savePlayer(id) {
     .update({
       name: editPlayer.name.trim(),
       comments: editPlayer.comments?.trim() || null,
-      Deckcolor1: editPlayer.Deckcolor1 || null,
-      Deckcolor2: editPlayer.Deckcolor2 || null
+      deckcolor1: editPlayer.deckcolor1 || null,
+      deckcolor2: editPlayer.deckcolor2 || null
     })
     .eq('id', id);
 
@@ -49,8 +49,7 @@ async function savePlayer(id) {
     return;
   }
 
-  // Recharge les joueurs
-  fetchPlayers(); // ou le bon nom de ta fonction
+  fetchPlayers(); // actualiser
   setEditPlayer(null);
 }
 
