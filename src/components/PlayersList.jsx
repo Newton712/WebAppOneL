@@ -43,19 +43,19 @@ export default function PlayersList({ players, editPlayer, setEditPlayer, savePl
                   {isEditing ? (
                     <input
                       className="w-full bg-[#1e1e1e] text-white border border-gray-600 rounded px-2 py-1"
-                      value={editPlayer.description || ''}
-                      onChange={(e) => setEditPlayer({ ...editPlayer, description: e.target.value })}
+                      value={editPlayer.comments || ''}
+                      onChange={(e) => setEditPlayer({ ...editPlayer, comments: e.target.value })}
                     />
                   ) : (
-                    p.description
+                    p.comments
                   )}
                 </td>
                 <td className="px-4 py-2 border-b border-gray-700 text-center">
                   {isEditing ? (
                     <select
                       className="bg-[#1e1e1e] text-white border border-gray-600 rounded px-2 py-1"
-                      value={editPlayer.color1 || ''}
-                      onChange={(e) => setEditPlayer({ ...editPlayer, color1: e.target.value })}
+                      value={editPlayer.Deckcolor1 || ''}
+                      onChange={(e) => setEditPlayer({ ...editPlayer, Deckcolor1: e.target.value })}
                     >
                       <option value="">--</option>
                       {Object.keys(colorImages).map(c => (
@@ -63,15 +63,15 @@ export default function PlayersList({ players, editPlayer, setEditPlayer, savePl
                       ))}
                     </select>
                   ) : (
-                    p.color1 && <img src={colorImages[p.color1]} alt={p.color1} className="w-5 h-5 inline-block rounded" />
+                    p.Deckcolor1 && <img src={colorImages[p.Deckcolor1]} alt={p.Deckcolor1} className="w-5 h-5 inline-block rounded" />
                   )}
                 </td>
                 <td className="px-4 py-2 border-b border-gray-700 text-center">
                   {isEditing ? (
                     <select
                       className="bg-[#1e1e1e] text-white border border-gray-600 rounded px-2 py-1"
-                      value={editPlayer.color2 || ''}
-                      onChange={(e) => setEditPlayer({ ...editPlayer, color2: e.target.value })}
+                      value={editPlayer.Deckcolor2 || ''}
+                      onChange={(e) => setEditPlayer({ ...editPlayer, Deckcolor2: e.target.value })}
                     >
                       <option value="">--</option>
                       {Object.keys(colorImages).map(c => (
@@ -79,7 +79,7 @@ export default function PlayersList({ players, editPlayer, setEditPlayer, savePl
                       ))}
                     </select>
                   ) : (
-                    p.color2 && <img src={colorImages[p.color2]} alt={p.color2} className="w-5 h-5 inline-block rounded" />
+                    p.Deckcolor2 && <img src={colorImages[p.Deckcolor2]} alt={p.Deckcolor2} className="w-5 h-5 inline-block rounded" />
                   )}
                 </td>
                 <td className="px-4 py-2 border-b border-gray-700 text-center">
