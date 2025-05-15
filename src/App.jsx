@@ -61,28 +61,33 @@ async function handleImportOrRedirect() {
   }
 
   try {
-    const apiUrl = import.meta.env.VITE_API_URL;;
+  const apiUrl = import.meta.env.VITE_API_URL;
 
-    for (const type of ["tournament", "players", "tables"]) {
-      const res = await fetch(`${apiUrl}/import/players`, { method: "POST" });
-      if (!res.ok) throw new Error(`Erreur lors de l'import ${type}`);
-    }
+  const res = await fetch(`${apiUrl}/import/all`, {
+    method: "POST",
+  });
 
-    const { data: inserted } = await supabase
-      .from('tournaments')
-      .select('*')
-      .eq('melee_id', meleeId)
-      .maybeSingle();
-
-    if (inserted) {
-      setSelectedTournament(inserted);
-    } else {
-      throw new Error("Le tournoi n'a pas été retrouvé dans Supabase.");
-    }
-  } catch (err) {
-    console.error(err);
-    alert("Erreur lors de l'import automatique depuis la VM.");
+  if (!res.ok) {
+    const msg = await res.text();
+    throw new Error(`Erreur lors de l'import complet : ${msg}`);
   }
+
+  const { data: inserted } = await supabase
+    .from('tournaments')
+    .select('*')
+    .eq('melee_id', meleeId)
+    .maybeSingle();
+
+  if (inserted) {
+    setSelectedTournament(inserted);
+  } else {
+    throw new Error("Le tournoi n'a pas été retrouvé dans Supabase après import.");
+  }
+} catch (err) {
+  console.error("Erreur lors de l'import : ", err);
+  alert("Erreur lors de l'import automatique depuis la VM.");
+}
+
 }
 
 
