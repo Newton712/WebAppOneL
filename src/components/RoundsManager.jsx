@@ -38,8 +38,8 @@ async function savePlayer(id) {
     .update({
       name: editPlayer.name.trim(),
       comments: editPlayer.comments?.trim() || null,
-      deckcolor1: editPlayer.Deckcolor1 || null,
-      deckcolor2: editPlayer.Deckcolor2 || null
+      deckcolor1: editPlayer.deckcolor1 || null,
+      deckcolor2: editPlayer.deckcolor2 || null
     })
     .eq('id', id);
 
@@ -49,19 +49,15 @@ async function savePlayer(id) {
     return;
   }
 
-  // 🔁 Rafraîchir la liste
-  if (typeof fetchPlayers === 'function') {
-    await fetchPlayers();
-  }
-
+  fetchPlayers(selectedTournament.tournament_id); // actualiser
   setEditPlayer(null);
 }
 
-async function fetchPlayers() {
+async function fetchPlayers(tournament_id) {
   const { data, error } = await supabase
     .from('players')
     .select('*')
-    .eq('tournament_id', selectedTournament.tournament_id);
+    .eq('tournament_id', tournament_id);
 
   if (!error) {
     setPlayers(data);
