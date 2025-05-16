@@ -70,8 +70,9 @@ async function handleImportOrRedirect() {
   try {
   const apiUrl = import.meta.env.VITE_API_URL;
 
-  const res = await fetch(`${apiUrl}/import/all`, {
-    method: "POST",
+ const res = await fetch(`${apiUrl}/import/all/${meleeId}`, {
+  method: "POST",
+
   });
 
   if (!res.ok) {
