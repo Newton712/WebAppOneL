@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import PlayersList from './PlayersList';
 
-export default function RoundsManager({ tournament, players }) {
+export default function RoundsManager({ tournament, players, fetchPlayers}) {
   const [rounds, setRounds] = useState([]);
   const [tablesByRound, setTablesByRound] = useState({});
   const [newRoundName, setNewRoundName] = useState('');
@@ -49,7 +49,7 @@ async function savePlayer(id) {
     return;
   }
 
-  fetchPlayers(selectedTournament.tournament_id); // actualiser
+  await fetchPlayers(selectedTournament.tournament_id); // actualiser
   setEditPlayer(null);
 }
 

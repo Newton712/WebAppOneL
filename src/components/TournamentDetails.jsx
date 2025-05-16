@@ -111,7 +111,11 @@ export default function TournamentDetails({ tournament, onBack }) {
         </div>
       </div>
 
-      <RoundsManager tournament={tournament} players={players} />
+      <RoundsManager
+        tournament={tournament}
+        players={players}
+        fetchPlayers={fetchPlayers}
+      />
 
       <div className="mt-8 text-center">
         <button onClick={onBack} className="bg-red-500 px-4 py-2 rounded">
