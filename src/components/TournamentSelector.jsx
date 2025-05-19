@@ -63,12 +63,16 @@ export default function TournamentSelector({
 
       <div className="space-y-2">
         {filteredTournaments.map((t) => (
-          <div
-            key={t.tournament_id}
-            className="border p-2 rounded hover:bg-gray-100 cursor-pointer"
-            onClick={() => setSelectedTournament(t)}
-          >
-            {t.tournament_name} ({t.tournament_date})
+          <div key={t.tournament_id} className="flex justify-between items-center border p-2 rounded">
+            <div>
+              <strong>{t.tournament_name}</strong> <span className="text-sm text-gray-500">{t.tournament_date}</span>
+            </div>
+            <button
+              onClick={() => setSelectedTournament(t)}
+              className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
+            >
+              Consulter
+            </button>
           </div>
         ))}
       </div>

@@ -1,37 +1,31 @@
-/* index.css */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* Ajouts custom pour un thème melee.gg-like */
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f9fafb;
-  color: #111827;
+  @apply bg-[#121212] text-gray-100 font-sans;
 }
 
-a {
-  color: #2563eb;
-  text-decoration: none;
-}
-a:hover {
-  text-decoration: underline;
+input,
+select,
+textarea {
+  @apply bg-[#1e1e1e] border border-gray-700 text-white rounded px-3 py-2;
 }
 
 button {
-  transition: background-color 0.2s;
+  @apply font-medium transition-colors duration-150;
 }
 
-input, select, textarea {
-  @apply border border-gray-300 rounded px-2 py-1;
+button:hover {
+  @apply opacity-80;
 }
 
-/* Utilities to mimic melee.gg aesthetic */
-.bg-melee {
-  background-color: #2c3e50;
+table {
+  @apply w-full text-sm text-left text-gray-300 bg-[#1e1e1e] border border-gray-700 rounded;
 }
-.text-melee-primary {
-  color: #ecf0f1;
-}
-.border-melee {
-  border-color: #34495e;
+
+th,
+td {
+  @apply px-4 py-2 border-b border-gray-700;
 }
