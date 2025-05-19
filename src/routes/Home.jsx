@@ -1,32 +1,32 @@
-// App.jsx
+// src/routes/Home.jsx
 import React, { useState } from 'react';
+import Header from '../components/Header';
+import TournamentTable from '../components/TournamentTable';
+import PlayerTable from '../components/PlayerTable';
+import { supabase } from '../lib/supabase';
 import { useNavigate } from 'react-router-dom';
-import Header from './components/Header';
-import TournamentTable from './components/TournamentTable';
-import PlayerTable from './components/PlayerTable';
-import { supabase } from './lib/supabase';
 
-export default function App() {
+export default function Home() {
   const [tournamentResults, setTournamentResults] = useState([]);
   const [playerResults, setPlayerResults] = useState([]);
   const navigate = useNavigate();
 
   async function handleSearchTournaments(name) {
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from('tournaments')
       .select('*')
       .ilike('tournament_name', `%${name}%`);
 
-    if (!error) setTournamentResults(data);
+    setTournamentResults(data || []);
   }
 
   async function handleSearchPlayers(name) {
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from('players')
       .select('*')
       .ilike('name', `%${name}%`);
 
-    if (!error) setPlayerResults(data);
+    setPlayerResults(data || []);
   }
 
   async function handleImportOrOpen(link) {
