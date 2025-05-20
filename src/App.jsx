@@ -1,37 +1,24 @@
-// App.jsx
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Header from './components/Header';
-import TournamentTable from './components/TournamentTable';
-import PlayerTable from './components/PlayerTable';
+// src/App.jsx
+import { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
+import TournamentSelector from './components/TournamentSelector';
+import TournamentPage from './routes/TournamentPage';
+import PlayerHistory from './routes/PlayerHistory';
 import { supabase } from './lib/supabase';
 
 export default function App() {
-  const [tournamentResults, setTournamentResults] = useState([]);
-  const [playerResults, setPlayerResults] = useState([]);
+  const [meleeLink, setMeleeLink] = useState('');
+  const [searchName, setSearchName] = useState('');
+  const [filteredTournaments, setFilteredTournaments] = useState([]);
+  const [playerSearch, setPlayerSearch] = useState('');
+  const [foundPlayers, setFoundPlayers] = useState([]);
+  const [selectedTournament, setSelectedTournament] = useState(null);
+
   const navigate = useNavigate();
 
-  async function handleSearchTournaments(name) {
-    const { data, error } = await supabase
-      .from('tournaments')
-      .select('*')
-      .ilike('tournament_name', `%${name}%`);
-
-    if (!error) setTournamentResults(data);
-  }
-
-  async function handleSearchPlayers(name) {
-    const { data, error } = await supabase
-      .from('players')
-      .select('*')
-      .ilike('name', `%${name}%`);
-
-    if (!error) setPlayerResults(data);
-  }
-
-  async function handleImportOrOpen(link) {
-    const match = link.match(/\/Tournament\/View\/(\d+)/);
-    if (!match) return alert('Lien Melee invalide');
+  async function handleImportOrRedirect() {
+    const match = meleeLink.match(/(\\d+)/);
+    if (!match) return alert('Lien invalide');
     const meleeId = match[1];
 
     const { data: existing } = await supabase
@@ -40,32 +27,61 @@ export default function App() {
       .eq('tournament_id', meleeId)
       .maybeSingle();
 
-    if (existing) navigate(`/tournament/${meleeId}`);
-    else {
-      await fetch(`${import.meta.env.VITE_API_URL}/import/all/${meleeId}`, {
-        method: 'POST',
-      });
-      navigate(`/tournament/${meleeId}`);
+    if (existing) {
+      setSelectedTournament(existing);
+      navigate(`/tournament/${existing.tournament_id}`);
+    } else {
+      const apiUrl = import.meta.env.VITE_API_URL;
+      const res = await fetch(`${apiUrl}/import/all/${meleeId}`, { method: 'POST' });
+      if (!res.ok) return alert("Erreur d'import");
+      const { data: inserted } = await supabase
+        .from('tournaments')
+        .select('*')
+        .eq('tournament_id', meleeId)
+        .maybeSingle();
+      if (inserted) navigate(`/tournament/${inserted.tournament_id}`);
     }
   }
 
+  async function searchTournament() {
+    const { data } = await supabase
+      .from('tournaments')
+      .select('*')
+      .ilike('tournament_name', `%${searchName}%`);
+    setFilteredTournaments(data);
+  }
+
+  async function searchPlayers() {
+    const { data } = await supabase
+      .from('players')
+      .select('id, name')
+      .ilike('name', `%${playerSearch}%`);
+    setFoundPlayers(data);
+  }
+
   return (
-    <div className="min-h-screen bg-gray-100">
-      <Header
-        onImportOrOpen={handleImportOrOpen}
-        onSearchTournaments={handleSearchTournaments}
-        onSearchPlayers={handleSearchPlayers}
+    <Routes>
+      <Route
+        path="/"
+        element={
+          <TournamentSelector
+            meleeLink={meleeLink}
+            setMeleeLink={setMeleeLink}
+            handleImportOrRedirect={handleImportOrRedirect}
+            searchName={searchName}
+            setSearchName={setSearchName}
+            searchTournament={searchTournament}
+            filteredTournaments={filteredTournaments}
+            setSelectedTournament={setSelectedTournament}
+            playerSearch={playerSearch}
+            setPlayerSearch={setPlayerSearch}
+            searchPlayers={searchPlayers}
+            foundPlayers={foundPlayers}
+          />
+        }
       />
-
-      <div className="px-4 mt-24 space-y-8">
-        {tournamentResults.length > 0 && (
-          <TournamentTable tournaments={tournamentResults} />
-        )}
-
-        {playerResults.length > 0 && (
-          <PlayerTable players={playerResults} />
-        )}
-      </div>
-    </div>
+      <Route path="/tournament/:id" element={<TournamentPage />} />
+      <Route path="/player/:id" element={<PlayerHistory />} />
+    </Routes>
   );
 }
