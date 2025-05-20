@@ -18,7 +18,7 @@ export default function PlayerHistory() {
     const { data } = await supabase
       .from('players')
       .select('tournament_id, name, Deckcolor1, Deckcolor2, tournaments(tournament_name, tournament_date)')
-      .eq('name', playerName)
+      .ilike('name', playerName)
       .order('tournaments.tournament_date', { ascending: false });
 
     setHistory(data);
