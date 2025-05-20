@@ -1,133 +1,106 @@
 // src/components/PlayersList.jsx
-import React, { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
+import React, { useState } from 'react';
 import ColorDropdown from './ColorDropdown';
+import { supabase } from '../lib/supabase';
 
-export default function PlayersList({ tournamentId }) {
-  const [players, setPlayers] = useState([]);
-  const [editId, setEditId] = useState(null);
-  const [editedPlayer, setEditedPlayer] = useState({});
+export default function PlayersList({ tournamentId, players, refresh }) {
+  const [editingId, setEditingId] = useState(null);
+  const [editedPlayers, setEditedPlayers] = useState({});
 
-  useEffect(() => {
-    fetchPlayers();
-  }, [tournamentId]);
+  const handleEdit = (player) => {
+    setEditingId(player.id);
+    setEditedPlayers({
+      ...editedPlayers,
+      [player.id]: {
+        Deckcolor1: player.Deckcolor1,
+        Deckcolor2: player.Deckcolor2,
+        comments: player.comments || '',
+      },
+    });
+  };
 
-  async function fetchPlayers() {
-    const { data } = await supabase
-      .from('players')
-      .select('*')
-      .eq('tournament_id', tournamentId);
-    setPlayers(data);
-  }
+  const handleChange = (id, field, value) => {
+    setEditedPlayers({
+      ...editedPlayers,
+      [id]: {
+        ...editedPlayers[id],
+        [field]: value,
+      },
+    });
+  };
 
-  function startEdit(player) {
-    setEditId(player.id);
-    setEditedPlayer({ ...player });
-  }
-
-  function cancelEdit() {
-    setEditId(null);
-    setEditedPlayer({});
-  }
-
-  async function savePlayer() {
-    await supabase.from('players').update({
-      name: editedPlayer.name,
-      Deckcolor1: editedPlayer.Deckcolor1,
-      Deckcolor2: editedPlayer.Deckcolor2,
-      comments: editedPlayer.comments
-    }).eq('id', editedPlayer.id);
-
-    setEditId(null);
-    fetchPlayers();
-  }
+  const handleSave = async (id) => {
+    const update = editedPlayers[id];
+    const { error } = await supabase.from('players').update(update).eq('id', id);
+    if (!error) {
+      setEditingId(null);
+      setEditedPlayers({});
+      refresh();
+    }
+  };
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full table-auto border">
-        <thead className="bg-gray-100">
-          <tr>
-            <th className="p-2 border">Nom</th>
-            <th className="p-2 border">Deck 1</th>
-            <th className="p-2 border">Deck 2</th>
-            <th className="p-2 border">Commentaire</th>
-            <th className="p-2 border">Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {players.map((p) => (
-            <tr key={p.id}>
-              <td className="p-2 border">
-                {editId === p.id ? (
-                  <input
-                    className="border rounded px-2 py-1"
-                    value={editedPlayer.name}
-                    onChange={(e) => setEditedPlayer({ ...editedPlayer, name: e.target.value })}
-                  />
-                ) : (
-                  p.name
-                )}
+    <table className="min-w-full text-sm">
+      <thead>
+        <tr className="bg-gray-800 text-left">
+          <th className="px-4 py-2">Nom</th>
+          <th className="px-4 py-2">Deck 1</th>
+          <th className="px-4 py-2">Deck 2</th>
+          <th className="px-4 py-2">Commentaires</th>
+          <th className="px-4 py-2">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {players.map((p) => {
+          const isEditing = editingId === p.id;
+          const data = editedPlayers[p.id] || {};
+          return (
+            <tr key={p.id} className="border-t border-gray-700">
+              <td className="px-4 py-2">{p.name}</td>
+              <td className="px-4 py-2">
+                <ColorDropdown
+                  value={isEditing ? data.Deckcolor1 : p.Deckcolor1}
+                  onChange={(val) => handleChange(p.id, 'Deckcolor1', val)}
+                  disabled={!isEditing}
+                />
               </td>
-              <td className="p-2 border">
-                {editId === p.id ? (
-                  <ColorDropdown
-                    value={editedPlayer.Deckcolor1}
-                    onChange={(val) => setEditedPlayer({ ...editedPlayer, Deckcolor1: val })}
-                  />
-                ) : (
-                  <ColorDropdown value={p.Deckcolor1} readOnly />
-                )}
+              <td className="px-4 py-2">
+                <ColorDropdown
+                  value={isEditing ? data.Deckcolor2 : p.Deckcolor2}
+                  onChange={(val) => handleChange(p.id, 'Deckcolor2', val)}
+                  disabled={!isEditing}
+                />
               </td>
-              <td className="p-2 border">
-                {editId === p.id ? (
-                  <ColorDropdown
-                    value={editedPlayer.Deckcolor2}
-                    onChange={(val) => setEditedPlayer({ ...editedPlayer, Deckcolor2: val })}
-                  />
-                ) : (
-                  <ColorDropdown value={p.Deckcolor2} readOnly />
-                )}
+              <td className="px-4 py-2">
+                <input
+                  type="text"
+                  className="bg-gray-900 border border-gray-600 rounded px-2 py-1 w-full"
+                  value={isEditing ? data.comments : p.comments || ''}
+                  onChange={(e) => handleChange(p.id, 'comments', e.target.value)}
+                  disabled={!isEditing}
+                />
               </td>
-              <td className="p-2 border">
-                {editId === p.id ? (
-                  <input
-                    className="border rounded px-2 py-1 w-full"
-                    value={editedPlayer.comments || ''}
-                    onChange={(e) => setEditedPlayer({ ...editedPlayer, comments: e.target.value })}
-                  />
-                ) : (
-                  p.comments
-                )}
-              </td>
-              <td className="p-2 border">
-                {editId === p.id ? (
-                  <div className="flex gap-2">
-                    <button
-                      onClick={savePlayer}
-                      className="bg-green-600 text-white px-2 py-1 rounded"
-                    >
-                      💾
-                    </button>
-                    <button
-                      onClick={cancelEdit}
-                      className="bg-gray-400 text-white px-2 py-1 rounded"
-                    >
-                      ✖
-                    </button>
-                  </div>
+              <td className="px-4 py-2">
+                {!isEditing ? (
+                  <button
+                    onClick={() => handleEdit(p)}
+                    className="bg-yellow-600 px-3 py-1 rounded text-white"
+                  >
+                    Modifier
+                  </button>
                 ) : (
                   <button
-                    onClick={() => startEdit(p)}
-                    className="bg-blue-500 text-white px-2 py-1 rounded"
+                    onClick={() => handleSave(p.id)}
+                    className="bg-green-600 px-3 py-1 rounded text-white"
                   >
-                    ✏️
+                    Sauver
                   </button>
                 )}
               </td>
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          );
+        })}
+      </tbody>
+    </table>
   );
 }
