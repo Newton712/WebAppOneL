@@ -4,6 +4,7 @@
 @tailwind utilities;
 
 body {
+  @apply font-sans bg-neutral-900 text-white;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background-color: #f9fafb;
   color: #111827;

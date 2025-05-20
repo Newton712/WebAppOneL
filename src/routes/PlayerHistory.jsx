@@ -1,46 +1,65 @@
-// src/routes/PlayerHistory.jsx
+// src/pages/PlayerHistory.jsx
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 
 export default function PlayerHistory() {
-  const { name } = useParams();
+  const { playerName } = useParams();
   const navigate = useNavigate();
   const [history, setHistory] = useState([]);
 
   useEffect(() => {
-    fetchHistory();
-  }, [name]);
+    if (playerName) {
+      fetchHistory();
+    }
+  }, [playerName]);
 
   async function fetchHistory() {
     const { data } = await supabase
       .from('players')
       .select('tournament_id, name, Deckcolor1, Deckcolor2, tournaments(tournament_name, tournament_date)')
-      .eq('name', name)
+      .eq('name', playerName)
       .order('tournaments.tournament_date', { ascending: false });
 
-    setHistory(data || []);
+    setHistory(data);
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="sticky top-0 bg-white z-10 border-b shadow p-4 flex justify-between items-center">
-        <h1 className="text-xl font-bold">Historique de {name}</h1>
-        <button onClick={() => navigate('/')} className="text-blue-600 hover:underline">
+    <div className="p-6">
+      <header className="bg-white sticky top-0 z-10 shadow p-4 flex justify-between items-center">
+        <h1 className="text-xl font-bold text-gray-800">{playerName}</h1>
+        <button
+          onClick={() => navigate('/')}
+          className="bg-blue-600 text-white px-4 py-2 rounded"
+        >
           Retour accueil
         </button>
-      </div>
+      </header>
 
-      <div className="p-4 space-y-4">
-        {history.map((entry, idx) => (
-          <div key={idx} className="border p-4 rounded shadow">
-            <p><strong>Tournoi:</strong> {entry.tournaments?.tournament_name}</p>
-            <p><strong>Date:</strong> {entry.tournaments?.tournament_date}</p>
-            <p><strong>Deck:</strong> {entry.Deckcolor1} / {entry.Deckcolor2}</p>
-          </div>
-        ))}
-        {history.length === 0 && <p>Aucune participation trouvée.</p>}
-      </div>
+      {history.length === 0 ? (
+        <p className="mt-4 text-gray-500">Aucune donnée trouvée.</p>
+      ) : (
+        <table className="w-full mt-4 table-auto border">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="p-2 border">Tournoi</th>
+              <th className="p-2 border">Date</th>
+              <th className="p-2 border">Deck 1</th>
+              <th className="p-2 border">Deck 2</th>
+            </tr>
+          </thead>
+          <tbody>
+            {history.map((row, idx) => (
+              <tr key={idx}>
+                <td className="p-2 border">{row.tournaments?.tournament_name || ''}</td>
+                <td className="p-2 border">{row.tournaments?.tournament_date || ''}</td>
+                <td className="p-2 border">{row.Deckcolor1}</td>
+                <td className="p-2 border">{row.Deckcolor2}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }
