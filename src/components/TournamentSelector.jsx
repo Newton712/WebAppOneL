@@ -86,12 +86,12 @@ export default function TournamentSelector({
                   <td className="p-2 border">{t.tournament_name}</td>
                   <td className="p-2 border">{t.tournament_date}</td>
                   <td className="p-2 border text-center">
-                    <button
-                      onClick={() => setSelectedTournament(t)}
-                      className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
-                    >
-                      Consulter
-                    </button>
+                  <button
+                    onClick={() => navigate(`/tournament/${t.tournament_id}`)}
+                    className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+                  >
+                    Consulter
+                  </button>
                   </td>
                 </tr>
               ))}
