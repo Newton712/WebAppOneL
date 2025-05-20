@@ -29,7 +29,9 @@ export default function Home() {
       const roundNumbers = [...new Set(data.map(p => parseInt(p.round.match(/\d+/))))].sort((a, b) => a - b);
       const roundLabels = roundNumbers.map(n => `Round ${n}`);
       setRounds(roundLabels);
-      setSelectedRound(roundLabels[0]);
+      if (roundLabels.length > 0) {
+        setSelectedRound(roundLabels[0]);
+      }
     }
   };
 
