@@ -27,22 +27,25 @@ export default function PlayersList({ tournamentId }) {
     if (data) setPlayers(data);
   }
 
-  async function savePlayer(playerId) {
-    const { error } = await supabase
-      .from('players')
-      .update({
-        name: editPlayer.name,
-        comments: editPlayer.comments,
-        Deckcolor1: editPlayer.deckcolor1,
-        Deckcolor2: editPlayer.deckcolor2,
-      })
-      .eq('id', playerId);
+async function savePlayer(playerId) {
+  const { error } = await supabase
+    .from('players')
+    .update({
+      name: editPlayer.name,
+      comments: editPlayer.comments,
+      Deckcolor1: editPlayer.Deckcolor1, // majuscule
+      Deckcolor2: editPlayer.Deckcolor2,
+    })
+    .eq('id', playerId);
 
-    if (!error) {
-      setEditPlayer(null);
-      fetchPlayers();
-    }
+  if (!error) {
+    setEditPlayer(null);  // <- repasse en mode affichage
+    fetchPlayers();       // <- recharge les données avec les couleurs et commentaires
+  } else {
+    console.error("Erreur lors de la sauvegarde:", error);
   }
+}
+
 
   return (
     <div className="mb-6">
