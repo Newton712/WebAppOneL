@@ -1,7 +1,7 @@
 // src/components/PlayersList.jsx
-import React, { useState } from 'react';
-import ColorDropdown from './ColorDropdown';
+import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
+import ColorDropdown from './ColorDropdown';
 import jaune from '../assets/colors/jaune.png';
 import mauve from '../assets/colors/mauve.png';
 import vert from '../assets/colors/vert.png';
@@ -9,140 +9,128 @@ import rouge from '../assets/colors/rouge.png';
 import bleu from '../assets/colors/bleu.png';
 import gris from '../assets/colors/gris.png';
 
-const colorMap = {
-  jaune,
-  mauve,
-  vert,
-  rouge,
-  bleu,
-  gris,
-};
+const colorIcons = { jaune, mauve, vert, rouge, bleu, gris };
 
-export default function PlayersList({ tournamentId, players, refresh }) {
+export default function PlayersList({ tournamentId }) {
+  const [players, setPlayers] = useState([]);
   const [editingId, setEditingId] = useState(null);
-  const [editedPlayers, setEditedPlayers] = useState({});
+  const [formData, setFormData] = useState({});
 
-  const handleEdit = (player) => {
+  useEffect(() => {
+    fetchPlayers();
+  }, [tournamentId]);
+
+  async function fetchPlayers() {
+    const { data, error } = await supabase
+      .from('players')
+      .select('*')
+      .eq('tournament_id', tournamentId)
+      .order('name');
+    if (data) setPlayers(data);
+  }
+
+  function startEdit(player) {
     setEditingId(player.id);
-    setEditedPlayers({
-      ...editedPlayers,
-      [player.id]: {
-        Deckcolor1: player.Deckcolor1,
-        Deckcolor2: player.Deckcolor2,
-        comments: player.comments || '',
-      },
+    setFormData({
+      Deckcolor1: player.Deckcolor1 || '',
+      Deckcolor2: player.Deckcolor2 || '',
+      comments: player.comments || '',
     });
-  };
+  }
 
-  const handleChange = (id, field, value) => {
-    setEditedPlayers({
-      ...editedPlayers,
-      [id]: {
-        ...editedPlayers[id],
-        [field]: value,
-      },
-    });
-  };
+  async function saveEdit(playerId) {
+    const { error } = await supabase
+      .from('players')
+      .update(formData)
+      .eq('id', playerId);
 
-  const handleSave = async (id) => {
-    const update = editedPlayers[id];
-    const { error } = await supabase.from('players').update(update).eq('id', id);
     if (!error) {
       setEditingId(null);
-      setEditedPlayers({});
-      refresh();
+      setFormData({});
+      fetchPlayers();
     }
-  };
-
-  const sortedPlayers = [...players].sort((a, b) =>
-    a.name.localeCompare(b.name)
-  );
+  }
 
   return (
-    <table className="min-w-full text-sm text-white bg-black border border-gray-700">
-      <thead className="bg-gray-800">
-        <tr>
-          <th className="px-4 py-2">Nom</th>
-          <th className="px-4 py-2">Deck 1</th>
-          <th className="px-4 py-2">Deck 2</th>
-          <th className="px-4 py-2">Commentaires</th>
-          <th className="px-4 py-2">Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        {sortedPlayers.map((p) => {
-          const isEditing = editingId === p.id;
-          const data = editedPlayers[p.id] || {};
-          return (
-            <tr key={p.id} className="border-t border-gray-700">
-              <td className="px-4 py-2">{p.name}</td>
-              <td className="px-4 py-2">
-                {isEditing ? (
+    <div className="overflow-x-auto">
+      <table className="min-w-full border border-white">
+        <thead className="bg-black text-white">
+          <tr>
+            <th className="p-2">Nom</th>
+            <th className="p-2">Deck 1</th>
+            <th className="p-2">Deck 2</th>
+            <th className="p-2">Commentaires</th>
+            <th className="p-2">Action</th>
+          </tr>
+        </thead>
+        <tbody className="bg-black text-white">
+          {players.map((player) => (
+            <tr key={player.id}>
+              <td className="p-2">{player.name}</td>
+              <td className="p-2">
+                {editingId === player.id ? (
                   <ColorDropdown
-                    value={data.Deckcolor1}
-                    onChange={(val) => handleChange(p.id, 'Deckcolor1', val)}
-                    disabled={false}
+                    value={formData.Deckcolor1}
+                    onChange={(v) => setFormData({ ...formData, Deckcolor1: v })}
                   />
                 ) : (
-                  p.Deckcolor1 && (
+                  player.Deckcolor1 && (
                     <img
-                      src={colorMap[p.Deckcolor1]}
-                      alt={p.Deckcolor1}
-                      className="w-6 h-6 inline-block"
+                      src={colorIcons[player.Deckcolor1]}
+                      alt={player.Deckcolor1}
+                      className="w-6 h-6"
                     />
                   )
                 )}
               </td>
-              <td className="px-4 py-2">
-                {isEditing ? (
+              <td className="p-2">
+                {editingId === player.id ? (
                   <ColorDropdown
-                    value={data.Deckcolor2}
-                    onChange={(val) => handleChange(p.id, 'Deckcolor2', val)}
-                    disabled={false}
+                    value={formData.Deckcolor2}
+                    onChange={(v) => setFormData({ ...formData, Deckcolor2: v })}
                   />
                 ) : (
-                  p.Deckcolor2 && (
+                  player.Deckcolor2 && (
                     <img
-                      src={colorMap[p.Deckcolor2]}
-                      alt={p.Deckcolor2}
-                      className="w-6 h-6 inline-block"
+                      src={colorIcons[player.Deckcolor2]}
+                      alt={player.Deckcolor2}
+                      className="w-6 h-6"
                     />
                   )
                 )}
               </td>
-              <td className="px-4 py-2">
-                {isEditing ? (
+              <td className="p-2">
+                {editingId === player.id ? (
                   <input
-                    type="text"
-                    className="bg-gray-900 border border-gray-600 rounded px-2 py-1 w-full text-white"
-                    value={data.comments}
-                    onChange={(e) => handleChange(p.id, 'comments', e.target.value)}
+                    value={formData.comments}
+                    onChange={(e) => setFormData({ ...formData, comments: e.target.value })}
+                    className="bg-black border text-white p-1 w-full"
                   />
                 ) : (
-                  <span>{p.comments || ''}</span>
+                  <span>{player.comments}</span>
                 )}
               </td>
-              <td className="px-4 py-2">
-                {!isEditing ? (
+              <td className="p-2">
+                {editingId === player.id ? (
                   <button
-                    onClick={() => handleEdit(p)}
-                    className="bg-yellow-600 px-3 py-1 rounded text-white"
+                    className="bg-green-500 px-3 py-1 rounded"
+                    onClick={() => saveEdit(player.id)}
                   >
-                    Modifier
+                    Sauver
                   </button>
                 ) : (
                   <button
-                    onClick={() => handleSave(p.id)}
-                    className="bg-green-600 px-3 py-1 rounded text-white"
+                    className="bg-yellow-600 px-3 py-1 rounded"
+                    onClick={() => startEdit(player)}
                   >
-                    Sauver
+                    Modifier
                   </button>
                 )}
               </td>
             </tr>
-          );
-        })}
-      </tbody>
-    </table>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
