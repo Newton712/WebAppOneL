@@ -31,9 +31,7 @@ export default function TournamentDetails({ tournament, onBack }) {
 
       <section>
         <h2 className="text-lg font-semibold mb-2">Matchs</h2>
-        <RoundsManager
-          tournamentId={tournament.tournament_id}
-          meleeId={tournament.tournament_id}
+        <RoundsManager tournamentId={tournament.tournament_id}
         />
       </section>
     </div>

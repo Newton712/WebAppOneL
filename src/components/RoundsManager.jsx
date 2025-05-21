@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import ColorDropdown from './ColorDropdown';
 
-export default function RoundsManager({ tournamentId, meleeId }) {
+export default function RoundsManager({ tournamentId }) {
   const [rounds, setRounds] = useState([]);
   const [activeRound, setActiveRound] = useState('');
   const [pairings, setPairings] = useState([]);
@@ -54,7 +54,7 @@ export default function RoundsManager({ tournamentId, meleeId }) {
   }
 
   async function importTables() {
-    await fetch(`${import.meta.env.VITE_API_URL}/import/tables/${meleeId}`, {
+    await fetch(`${import.meta.env.VITE_API_URL}/import/tables/${tournamentId}`, {
       method: 'POST'
     });
     fetchRounds();
