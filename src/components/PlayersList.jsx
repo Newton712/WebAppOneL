@@ -74,9 +74,9 @@ export default function PlayersList({ tournamentId }) {
                     onChange={(v) => setFormData({ ...formData, Deckcolor1: v })}
                   />
                 ) : (
-                  player.Deckcolor1 && (
+                  player.Deckcolor1 && colorIcons[player.Deckcolor1.toLowerCase()] && (
                     <img
-                      src={colorIcons[player.Deckcolor1]}
+                      src={colorIcons[player.Deckcolor1.toLowerCase()]}
                       alt={player.Deckcolor1}
                       className="w-6 h-6"
                     />
@@ -90,9 +90,9 @@ export default function PlayersList({ tournamentId }) {
                     onChange={(v) => setFormData({ ...formData, Deckcolor2: v })}
                   />
                 ) : (
-                  player.Deckcolor2 && (
+                  player.Deckcolor2 && colorIcons[player.Deckcolor2.toLowerCase()] && (
                     <img
-                      src={colorIcons[player.Deckcolor2]}
+                      src={colorIcons[player.Deckcolor2.toLowerCase()]}
                       alt={player.Deckcolor2}
                       className="w-6 h-6"
                     />
