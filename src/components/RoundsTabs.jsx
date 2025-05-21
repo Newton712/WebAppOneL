@@ -1,32 +1,31 @@
 // src/components/RoundsTabs.jsx
 import React from 'react';
 
-export default function RoundsTabs({ pairings, selectedRound, onSelectRound, onImport }) {
-  const uniqueRounds = [...new Set(pairings.map(p => p.round))].filter(Boolean);
-
+export default function RoundsTabs({ rounds, active, onSelect, tournamentId, refresh }) {
   return (
-    <div>
-      <div className="flex space-x-2 overflow-x-auto">
-        {uniqueRounds.map((round) => (
-          <button
-            key={round}
-            onClick={() => onSelectRound(round)}
-            className={`px-4 py-2 rounded border ${selectedRound === round ? 'bg-blue-600 text-white' : 'bg-gray-100'}`}
-          >
-            {round}
-          </button>
-        ))}
+    <div className="flex gap-2 border-b border-gray-600 pb-2 mb-4">
+      {rounds.map((round) => (
         <button
-          onClick={onImport}
-          className="px-4 py-2 rounded border bg-green-600 text-white hover:bg-green-700"
+          key={round}
+          onClick={() => onSelect(round)}
+          className={`px-4 py-2 rounded-t ${
+            active === round ? 'bg-[#333] text-white font-bold' : 'bg-[#1e1e1e] text-gray-300'
+          }`}
         >
-          + Importer
+          {round}
         </button>
-      </div>
-
-      <div className="mt-4">
-        {/* Content of selected round is handled outside */}
-      </div>
+      ))}
+      <button
+        onClick={async () => {
+          await fetch(`${import.meta.env.VITE_API_URL}/import/tables/${tournamentId}`, {
+            method: 'POST',
+          });
+          refresh();
+        }}
+        className="ml-auto px-4 py-2 bg-blue-700 text-white rounded hover:bg-blue-800"
+      >
+        Importer
+      </button>
     </div>
   );
 }
