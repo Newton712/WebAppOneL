@@ -1,7 +1,6 @@
 // src/components/PlayersList.jsx
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import ColorDropdown from './ColorDropdown';
 import jaune from '../assets/colors/jaune.png';
 import mauve from '../assets/colors/mauve.png';
 import vert from '../assets/colors/vert.png';
@@ -9,12 +8,11 @@ import rouge from '../assets/colors/rouge.png';
 import bleu from '../assets/colors/bleu.png';
 import gris from '../assets/colors/gris.png';
 
-const colorIcons = { jaune, mauve, vert, rouge, bleu, gris };
+const colorImages = { jaune, mauve, vert, rouge, bleu, gris };
 
 export default function PlayersList({ tournamentId }) {
   const [players, setPlayers] = useState([]);
-  const [editingId, setEditingId] = useState(null);
-  const [formData, setFormData] = useState({});
+  const [editPlayer, setEditPlayer] = useState(null);
 
   useEffect(() => {
     fetchPlayers();
@@ -29,46 +27,56 @@ export default function PlayersList({ tournamentId }) {
     if (data) setPlayers(data);
   }
 
-  function startEdit(player) {
-    setEditingId(player.id);
-    setFormData({
-      Deckcolor1: player.Deckcolor1 || '',
-      Deckcolor2: player.Deckcolor2 || '',
-      comments: player.comments || '',
-    });
-  }
-
-  async function saveEdit(playerId) {
+  async function savePlayer(playerId) {
     const { error } = await supabase
       .from('players')
-      .update(formData)
+      .update({
+        name: editPlayer.name,
+        comments: editPlayer.comments,
+        Deckcolor1: editPlayer.deckcolor1,
+        Deckcolor2: editPlayer.deckcolor2,
+      })
       .eq('id', playerId);
 
     if (!error) {
-      setEditingId(null);
-      setFormData({});
+      setEditPlayer(null);
       fetchPlayers();
     }
   }
 
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full border border-white">
-        <thead className="bg-black text-white">
+    <div className="mb-6">
+      <h3 className="text-lg font-semibold mb-3 text-white">Joueurs du tournoi</h3>
+      <table className="w-full text-sm text-left text-gray-300 bg-[#1e1e1e] border border-gray-700 rounded overflow-hidden">
+        <thead className="bg-[#2a2a2a] text-gray-100 uppercase text-xs tracking-wider">
           <tr>
-            <th className="p-2">Nom</th>
-            <th className="p-2">Deck 1</th>
-            <th className="p-2">Deck 2</th>
-            <th className="p-2">Commentaires</th>
-            <th className="p-2">Action</th>
+            <th className="px-4 py-3 border-b border-gray-700">Nom</th>
+            <th className="px-4 py-3 border-b border-gray-700">Commentaires</th>
+            <th className="px-4 py-3 border-b border-gray-700 text-center">Deck 1</th>
+            <th className="px-4 py-3 border-b border-gray-700 text-center">Deck 2</th>
+            <th className="px-4 py-3 border-b border-gray-700 text-center">Actions</th>
           </tr>
         </thead>
-        <tbody className="bg-black text-white">
-          {players.map((player) => (
-            <tr key={player.id}>
-              <td className="p-2">{player.name}</td>
-              <td className="p-2">
-                {editingId === player.id ? (                    <select
+        <tbody>
+          {players.map((p, idx) => {
+            const isEditing = editPlayer?.id === p.id;
+            return (
+              <tr key={p.id} className={idx % 2 === 0 ? 'bg-[#1e1e1e]' : 'bg-[#2a2a2a]'}>
+                <td className="px-4 py-2 border-b border-gray-700">{p.name}</td>
+                <td className="px-4 py-2 border-b border-gray-700">
+                  {isEditing ? (
+                    <input
+                      className="w-full bg-[#1e1e1e] text-white border border-gray-600 rounded px-2 py-1"
+                      value={editPlayer.comments || ''}
+                      onChange={(e) => setEditPlayer({ ...editPlayer, comments: e.target.value })}
+                    />
+                  ) : (
+                    p.comments
+                  )}
+                </td>
+                <td className="px-4 py-2 border-b border-gray-700 text-center">
+                  {isEditing ? (
+                    <select
                       className="bg-[#1e1e1e] text-white border border-gray-600 rounded px-2 py-1"
                       value={editPlayer.deckcolor1 || ''}
                       onChange={(e) => setEditPlayer({ ...editPlayer, deckcolor1: e.target.value })}
@@ -79,56 +87,53 @@ export default function PlayersList({ tournamentId }) {
                       ))}
                     </select>
                   ) : (
-                    player.deckcolor1 && <img src={colorImages[player.deckcolor1]} alt={player.deckcolor1} className="w-5 h-5 inline-block rounded" />
-                  )
-                }
-              </td>
-              <td className="p-2">
-                {editingId === player.id ? (
-                  <ColorDropdown
-                    value={formData.Deckcolor2}
-                    onChange={(v) => setFormData({ ...formData, Deckcolor2: v })}
-                  />
-                ) : (
-                  player.Deckcolor2 && colorIcons[player.Deckcolor2.toLowerCase()] && (
-                    <img
-                      src={colorIcons[player.Deckcolor2.toLowerCase()]}
-                      alt={player.Deckcolor2}
-                      className="w-6 h-6"
-                    />
-                  )
-                )}
-              </td>
-              <td className="p-2">
-                {editingId === player.id ? (
-                  <input
-                    value={formData.comments}
-                    onChange={(e) => setFormData({ ...formData, comments: e.target.value })}
-                    className="bg-black border text-white p-1 w-full"
-                  />
-                ) : (
-                  <span>{player.comments}</span>
-                )}
-              </td>
-              <td className="p-2">
-                {editingId === player.id ? (
-                  <button
-                    className="bg-green-500 px-3 py-1 rounded"
-                    onClick={() => saveEdit(player.id)}
-                  >
-                    💾
-                  </button>
-                ) : (
-                  <button
-                    className="bg-yellow-600 px-3 py-1 rounded"
-                    onClick={() => startEdit(player)}
-                  >
-                    Modifier
-                  </button>
-                )}
-              </td>
-            </tr>
-          ))}
+                    p.Deckcolor1?.toLowerCase() in colorImages ? (
+                      <img src={colorImages[p.Deckcolor1.toLowerCase()]} alt={p.Deckcolor1} className="w-5 h-5 inline-block rounded" />
+                    ) : (
+                      p.Deckcolor1 || ''
+                    )
+                  )}
+                </td>
+                <td className="px-4 py-2 border-b border-gray-700 text-center">
+                  {isEditing ? (
+                    <select
+                      className="bg-[#1e1e1e] text-white border border-gray-600 rounded px-2 py-1"
+                      value={editPlayer.deckcolor2 || ''}
+                      onChange={(e) => setEditPlayer({ ...editPlayer, deckcolor2: e.target.value })}
+                    >
+                      <option value="">--</option>
+                      {Object.keys(colorImages).map(c => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    p.Deckcolor2?.toLowerCase() in colorImages ? (
+                      <img src={colorImages[p.Deckcolor2.toLowerCase()]} alt={p.Deckcolor2} className="w-5 h-5 inline-block rounded" />
+                    ) : (
+                      p.Deckcolor2 || ''
+                    )
+                  )}
+                </td>
+                <td className="px-4 py-2 border-b border-gray-700 text-center">
+                  {isEditing ? (
+                    <button
+                      className="bg-green-600 text-white px-2 py-1 rounded"
+                      onClick={() => savePlayer(p.id)}
+                    >
+                      💾
+                    </button>
+                  ) : (
+                    <button
+                      className="text-blue-400 underline"
+                      onClick={() => setEditPlayer(p)}
+                    >
+                      Modifier
+                    </button>
+                  )}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
