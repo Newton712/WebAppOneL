@@ -79,7 +79,7 @@ export default function PlayersList({ tournamentId }) {
                       ))}
                     </select>
                   ) : (
-                    p.deckcolor1 && <img src={colorImages[p.deckcolor1]} alt={p.deckcolor1} className="w-5 h-5 inline-block rounded" />
+                    player.deckcolor1 && <img src={colorImages[player.deckcolor1]} alt={player.deckcolor1} className="w-5 h-5 inline-block rounded" />
                   )
                 }
               </td>
