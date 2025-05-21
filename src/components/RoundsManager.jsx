@@ -81,25 +81,24 @@ export default function RoundsManager({ tournamentId }) {
         </button>
       </div>
 
-      <table className="w-full table-auto border">
-        <thead className="bg-gray-100">
+
+      <table className="w-full text-sm text-left text-gray-300 bg-[#1e1e1e] border border-gray-700 rounded overflow-hidden">
+        <thead className="bg-[#2a2a2a] text-gray-100 uppercase text-xs tracking-wider">
           <tr>
-            <th className="p-2 border">Table</th>
-            <th className="p-2 border">Player 1</th>
-
-            <th className="p-2 border">Player 2</th>
-
-            <th className="p-2 border">Action</th>
+            <th className="px-4 py-3 border-b border-gray-700">Table</th>
+            <th className="px-4 py-3 border-b border-gray-700 text-center">Player 1</th>
+            <th className="px-4 py-3 border-b border-gray-700 text-center">Player 2</th>
+            <th className="px-4 py-3 border-b border-gray-700 text-center">Actions</th>
           </tr>
         </thead>
         <tbody>
           {pairings.map(p => (
             <tr key={p.id}>
-              <td className="p-2 border">{p.tablenum}</td>
-              <td className="p-2 border">{p.player_1}</td>
+              <td className="px-4 py-3 border-b border-gray-700">{p.tablenum}</td>
+              <td className="px-4 py-3 border-b border-gray-700">{p.player_1}</td>
 
-              <td className="p-2 border">{p.player_2}</td>
-              <td className="p-2 border">
+              <td className="px-4 py-3 border-b border-gray-700">{p.player_2}</td>
+              <td className="px-4 py-3 border-b border-gray-700">
                 <button
                   onClick={() => savePairing(p.id)}
                   className="bg-green-600 text-white px-2 py-1 rounded"
