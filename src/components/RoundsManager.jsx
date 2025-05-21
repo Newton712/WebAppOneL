@@ -1,68 +1,141 @@
 // src/components/RoundsManager.jsx
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import RoundsTabs from './RoundsTabs';
+import ColorDropdown from './ColorDropdown';
 
 export default function RoundsManager({ tournamentId }) {
-  const [pairings, setPairings] = useState([]);
+  const [rounds, setRounds] = useState([]);
   const [activeRound, setActiveRound] = useState('');
+  const [pairings, setPairings] = useState([]);
+  const [edited, setEdited] = useState({});
 
   useEffect(() => {
-    fetchPairings();
+    fetchRounds();
   }, [tournamentId]);
+
+  async function fetchRounds() {
+    const { data } = await supabase
+      .from('pairings')
+      .select('round')
+      .eq('tournament_id', tournamentId);
+    const uniqueRounds = [...new Set(data.map(p => p.round))];
+    setRounds(uniqueRounds);
+    setActiveRound(uniqueRounds[0] || '');
+  }
+
+  useEffect(() => {
+    if (activeRound) fetchPairings();
+  }, [activeRound]);
 
   async function fetchPairings() {
     const { data } = await supabase
       .from('pairings')
       .select('*')
-      .eq('tournament_id', tournamentId);
+      .eq('tournament_id', tournamentId)
+      .eq('round', activeRound);
+    setPairings(data);
+  }
 
-    if (data) {
-      setPairings(data);
-      const rounds = data.map(p => parseInt(p.round.replace(/[^0-9]/g, ''), 10)).filter(n => !isNaN(n));
-      const minRound = rounds.length ? Math.min(...rounds) : '';
-      setActiveRound(`Round ${minRound}`);
+  function updateField(id, field, value) {
+    setEdited(prev => ({ ...prev, [id]: { ...prev[id], [field]: value } }));
+  }
+
+  async function savePairing(id) {
+    const updates = edited[id];
+    if (updates) {
+      await supabase.from('pairings').update(updates).eq('id', id);
+      setEdited(prev => {
+        const copy = { ...prev };
+        delete copy[id];
+        return copy;
+      });
+      fetchPairings();
     }
   }
 
-  const rounds = Array.from(new Set(pairings.map(p => p.round))).sort((a, b) => {
-    const na = parseInt(a.replace(/\D/g, ''));
-    const nb = parseInt(b.replace(/\D/g, ''));
-    return na - nb;
-  });
-
-  const currentTables = pairings.filter(p => p.round === activeRound);
+  async function importTables() {
+    await fetch(`${import.meta.env.VITE_API_URL}/import/tables/${tournamentId}`, {
+      method: 'POST'
+    });
+    fetchRounds();
+    fetchPairings();
+  }
 
   return (
-    <div className="text-white">
-      <RoundsTabs
-        rounds={rounds}
-        active={activeRound}
-        onSelect={setActiveRound}
-        tournamentId={tournamentId}
-        refresh={fetchPairings}
-      />
-
-      <div className="mt-4">
-        <table className="w-full text-sm text-left text-gray-300 bg-[#1e1e1e] border border-gray-700 rounded overflow-hidden">
-          <thead className="bg-[#2a2a2a] text-gray-100 uppercase text-xs tracking-wider">
-            <tr>
-              <th className="px-4 py-3 border-b border-gray-700">Table</th>
-              <th className="px-4 py-3 border-b border-gray-700">Player 1</th>
-              <th className="px-4 py-3 border-b border-gray-700">Player 2</th>
-            </tr>
-          </thead>
-          <tbody>
-            {currentTables.map((t, idx) => (
-              <tr key={t.id} className={idx % 2 === 0 ? 'bg-[#1e1e1e]' : 'bg-[#2a2a2a]'}>
-                <td className="px-4 py-2 border-b border-gray-700">{t.tablenum}</td>
-                <td className="px-4 py-2 border-b border-gray-700">{t.player_1}</td>
-                <td className="px-4 py-2 border-b border-gray-700">{t.player_2}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+    <div className="mt-6 space-y-4">
+      <div className="flex gap-2">
+        {rounds.map(round => (
+          <button
+            key={round}
+            onClick={() => setActiveRound(round)}
+            className={`px-3 py-1 rounded ${activeRound === round ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+          >
+            {round}
+          </button>
+        ))}
+        <button
+          onClick={importTables}
+          className="bg-green-600 text-white px-3 py-1 rounded"
+        >
+          ➕ Importer
+        </button>
       </div>
+
+      <table className="w-full table-auto border">
+        <thead className="bg-gray-100">
+          <tr>
+            <th className="p-2 border">Table</th>
+            <th className="p-2 border">Player 1</th>
+            <th className="p-2 border">Deck A1</th>
+            <th className="p-2 border">Deck A2</th>
+            <th className="p-2 border">Player 2</th>
+            <th className="p-2 border">Deck B1</th>
+            <th className="p-2 border">Deck B2</th>
+            <th className="p-2 border">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {pairings.map(p => (
+            <tr key={p.id}>
+              <td className="p-2 border">{p.tablenum}</td>
+              <td className="p-2 border">{p.player_1}</td>
+              <td className="p-2 border">
+                <ColorDropdown
+                  value={edited[p.id]?.DeckcolorA1 || p.DeckcolorA1}
+                  onChange={val => updateField(p.id, 'DeckcolorA1', val)}
+                />
+              </td>
+              <td className="p-2 border">
+                <ColorDropdown
+                  value={edited[p.id]?.DeckcolorA2 || p.DeckcolorA2}
+                  onChange={val => updateField(p.id, 'DeckcolorA2', val)}
+                />
+              </td>
+              <td className="p-2 border">{p.player_2}</td>
+              <td className="p-2 border">
+                <ColorDropdown
+                  value={edited[p.id]?.DeckcolorB1 || p.DeckcolorB1}
+                  onChange={val => updateField(p.id, 'DeckcolorB1', val)}
+                />
+              </td>
+              <td className="p-2 border">
+                <ColorDropdown
+                  value={edited[p.id]?.DeckcolorB2 || p.DeckcolorB2}
+                  onChange={val => updateField(p.id, 'DeckcolorB2', val)}
+                />
+              </td>
+              <td className="p-2 border">
+                <button
+                  onClick={() => savePairing(p.id)}
+                  className="bg-green-600 text-white px-2 py-1 rounded"
+                >
+                  💾
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
