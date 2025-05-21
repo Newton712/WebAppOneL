@@ -86,11 +86,9 @@ export default function RoundsManager({ tournamentId }) {
           <tr>
             <th className="p-2 border">Table</th>
             <th className="p-2 border">Player 1</th>
-            <th className="p-2 border">Deck A1</th>
-            <th className="p-2 border">Deck A2</th>
+
             <th className="p-2 border">Player 2</th>
-            <th className="p-2 border">Deck B1</th>
-            <th className="p-2 border">Deck B2</th>
+
             <th className="p-2 border">Action</th>
           </tr>
         </thead>
@@ -99,31 +97,8 @@ export default function RoundsManager({ tournamentId }) {
             <tr key={p.id}>
               <td className="p-2 border">{p.tablenum}</td>
               <td className="p-2 border">{p.player_1}</td>
-              <td className="p-2 border">
-                <ColorDropdown
-                  value={edited[p.id]?.DeckcolorA1 || p.DeckcolorA1}
-                  onChange={val => updateField(p.id, 'DeckcolorA1', val)}
-                />
-              </td>
-              <td className="p-2 border">
-                <ColorDropdown
-                  value={edited[p.id]?.DeckcolorA2 || p.DeckcolorA2}
-                  onChange={val => updateField(p.id, 'DeckcolorA2', val)}
-                />
-              </td>
+
               <td className="p-2 border">{p.player_2}</td>
-              <td className="p-2 border">
-                <ColorDropdown
-                  value={edited[p.id]?.DeckcolorB1 || p.DeckcolorB1}
-                  onChange={val => updateField(p.id, 'DeckcolorB1', val)}
-                />
-              </td>
-              <td className="p-2 border">
-                <ColorDropdown
-                  value={edited[p.id]?.DeckcolorB2 || p.DeckcolorB2}
-                  onChange={val => updateField(p.id, 'DeckcolorB2', val)}
-                />
-              </td>
               <td className="p-2 border">
                 <button
                   onClick={() => savePairing(p.id)}
