@@ -9,24 +9,27 @@ import { useNavigate } from 'react-router-dom';
 export default function Home() {
   const [tournamentResults, setTournamentResults] = useState([]);
   const [playerResults, setPlayerResults] = useState([]);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   async function handleSearchTournaments(name) {
-    const { data } = await supabase
+    setLoading(true);
+    const { data, error } = await supabase
       .from('tournaments')
       .select('*')
       .ilike('tournament_name', `%${name}%`);
-
     setTournamentResults(data || []);
+    setLoading(false);
   }
 
   async function handleSearchPlayers(name) {
-    const { data } = await supabase
+    setLoading(true);
+    const { data, error } = await supabase
       .from('players')
       .select('*')
       .ilike('name', `%${name}%`);
-
     setPlayerResults(data || []);
+    setLoading(false);
   }
 
   async function handleImportOrOpen(link) {
@@ -50,7 +53,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-melee text-white">
       <Header
         onImportOrOpen={handleImportOrOpen}
         onSearchTournaments={handleSearchTournaments}
@@ -58,6 +61,7 @@ export default function Home() {
       />
 
       <div className="px-4 mt-24 space-y-8">
+        {loading && <p>Chargement...</p>}
         {tournamentResults.length > 0 && (
           <TournamentTable tournaments={tournamentResults} />
         )}
