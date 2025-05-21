@@ -31,10 +31,10 @@ async function savePlayer(playerId) {
   const { error } = await supabase
     .from('players')
     .update({
-      name: editPlayer.name,
-      comments: editPlayer.comments,
-      Deckcolor1: editPlayer.Deckcolor1, // majuscule
-      Deckcolor2: editPlayer.Deckcolor2,
+      name: editPlayer.name.trim(),
+      comments: editPlayer.comments?.trim() || null,
+      deckcolor1: editPlayer.deckcolor1 || null,
+      deckcolor2: editPlayer.deckcolor2 || null
     })
     .eq('id', playerId);
 
@@ -46,7 +46,6 @@ async function savePlayer(playerId) {
   }
 }
 
-
   return (
     <div className="mb-6">
       <h3 className="text-lg font-semibold mb-3 text-white">Joueurs du tournoi</h3>
@@ -54,9 +53,9 @@ async function savePlayer(playerId) {
         <thead className="bg-[#2a2a2a] text-gray-100 uppercase text-xs tracking-wider">
           <tr>
             <th className="px-4 py-3 border-b border-gray-700">Nom</th>
-            <th className="px-4 py-3 border-b border-gray-700">Commentaires</th>
             <th className="px-4 py-3 border-b border-gray-700 text-center">Deck 1</th>
             <th className="px-4 py-3 border-b border-gray-700 text-center">Deck 2</th>
+            <th className="px-4 py-3 border-b border-gray-700">Commentaires</th>
             <th className="px-4 py-3 border-b border-gray-700 text-center">Actions</th>
           </tr>
         </thead>
@@ -66,17 +65,7 @@ async function savePlayer(playerId) {
             return (
               <tr key={p.id} className={idx % 2 === 0 ? 'bg-[#1e1e1e]' : 'bg-[#2a2a2a]'}>
                 <td className="px-4 py-2 border-b border-gray-700">{p.name}</td>
-                <td className="px-4 py-2 border-b border-gray-700">
-                  {isEditing ? (
-                    <input
-                      className="w-full bg-[#1e1e1e] text-white border border-gray-600 rounded px-2 py-1"
-                      value={editPlayer.comments || ''}
-                      onChange={(e) => setEditPlayer({ ...editPlayer, comments: e.target.value })}
-                    />
-                  ) : (
-                    p.comments
-                  )}
-                </td>
+
                  <td className="px-4 py-2 border-b border-gray-700 text-center">
                   {isEditing ? (
                     <select
@@ -106,11 +95,18 @@ async function savePlayer(playerId) {
                       ))}
                     </select>
                   ) : (
-                    p.Deckcolor2?.toLowerCase() in colorImages ? (
-                      <img src={colorImages[p.Deckcolor2.toLowerCase()]} alt={p.Deckcolor2} className="w-5 h-5 inline-block rounded" />
-                    ) : (
-                      p.Deckcolor2 || ''
-                    )
+                    p.deckcolor2 && <img src={colorImages[p.deckcolor2]} alt={p.deckcolor2} className="w-5 h-5 inline-block rounded" />
+                  )}
+                </td>
+                <td className="px-4 py-2 border-b border-gray-700">
+                  {isEditing ? (
+                    <input
+                      className="w-full bg-[#1e1e1e] text-white border border-gray-600 rounded px-2 py-1"
+                      value={editPlayer.comments || ''}
+                      onChange={(e) => setEditPlayer({ ...editPlayer, comments: e.target.value })}
+                    />
+                  ) : (
+                    p.comments
                   )}
                 </td>
                 <td className="px-4 py-2 border-b border-gray-700 text-center">
