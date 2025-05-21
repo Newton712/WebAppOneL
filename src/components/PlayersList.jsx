@@ -77,7 +77,7 @@ async function savePlayer(playerId) {
                     p.comments
                   )}
                 </td>
-                <td className="px-4 py-2 border-b border-gray-700 text-center">
+                 <td className="px-4 py-2 border-b border-gray-700 text-center">
                   {isEditing ? (
                     <select
                       className="bg-[#1e1e1e] text-white border border-gray-600 rounded px-2 py-1"
@@ -90,11 +90,7 @@ async function savePlayer(playerId) {
                       ))}
                     </select>
                   ) : (
-                    p.Deckcolor1?.toLowerCase() in colorImages ? (
-                      <img src={colorImages[p.Deckcolor1.toLowerCase()]} alt={p.Deckcolor1} className="w-5 h-5 inline-block rounded" />
-                    ) : (
-                      p.Deckcolor1 || ''
-                    )
+                    p.deckcolor1 && <img src={colorImages[p.deckcolor1]} alt={p.deckcolor1} className="w-5 h-5 inline-block rounded" />
                   )}
                 </td>
                 <td className="px-4 py-2 border-b border-gray-700 text-center">
