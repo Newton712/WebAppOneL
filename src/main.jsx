@@ -7,5 +7,7 @@ import './styles/index.css';
 
 const root = document.getElementById('root');
 ReactDOM.createRoot(root).render(
-  <h1 style={{ color: 'red' }}>TEST ROOT RENDER</h1>
+  <BrowserRouter>
+  <App />
+</BrowserRouter>
 );
