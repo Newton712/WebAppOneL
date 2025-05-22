@@ -87,7 +87,8 @@ export default function RoundsManager({ tournamentId }) {
           ➕ Importer
         </button>
       </div>
-
+      {/* Vérifie si pairings contient bien des données */}
+      {pairings?.length > 0 ? (
       <table className="w-full text-sm text-left text-gray-300 bg-[#1e1e1e] border border-gray-700 rounded overflow-hidden">
         <thead className="bg-[#2a2a2a] text-gray-100 uppercase text-xs tracking-wider">
           <tr>
@@ -115,6 +116,9 @@ export default function RoundsManager({ tournamentId }) {
           ))}
         </tbody>
       </table>
+      ) : (
+      <div className="text-white">Aucune table à afficher pour ce round.</div>
+    )}
     </div>
   );
 }
