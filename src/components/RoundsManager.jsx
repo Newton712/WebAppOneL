@@ -70,7 +70,55 @@ export default function RoundsManager({ tournamentId }) {
 
   return (
     <div className="mt-6 space-y-4">
-      <pre className="text-white">{JSON.stringify(pairings, null, 2)}</pre>
+      <div className="flex gap-2">
+        {rounds.map(round => (
+          <button
+            key={round}
+            onClick={() => setActiveRound(round)}
+            className={`px-3 py-1 rounded ${activeRound === round ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+          >
+            {round}
+          </button>
+        ))}
+        <button
+          onClick={importTables}
+          className="bg-green-600 text-white px-3 py-1 rounded"
+        >
+          ➕ Importer
+        </button>
+      </div>
+      {/* Vérifie si pairings contient bien des données */}
+      {pairings?.length > 0 ? (
+      <table className="w-full text-sm text-left text-gray-300 bg-[#1e1e1e] border border-gray-700 rounded overflow-hidden">
+        <thead className="bg-[#2a2a2a] text-gray-100 uppercase text-xs tracking-wider">
+          <tr>
+            <th className="px-4 py-3 border-b border-gray-700">Table</th>
+            <th className="px-4 py-3 border-b border-gray-700 text-center">Player 1</th>
+            <th className="px-4 py-3 border-b border-gray-700 text-center">Player 2</th>
+            <th className="px-4 py-3 border-b border-gray-700 text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {pairings.map(p => (
+            <tr key={p.id}>
+              <td className="px-4 py-3 border-b border-gray-700">{p.tablenum}</td>
+              <td className="px-4 py-3 border-b border-gray-700">{p.player_1}</td>
+              <td className="px-4 py-3 border-b border-gray-700">{p.player_2}</td>
+              <td className="px-4 py-3 border-b border-gray-700">
+                <button
+                  onClick={() => savePairing(p.id)}
+                  className="bg-green-600 text-white px-2 py-1 rounded"
+                >
+                  💾
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      ) : (
+      <div className="text-white">Aucune table à afficher pour ce round.</div>
+    )}
     </div>
   );
 }
