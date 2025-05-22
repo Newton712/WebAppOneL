@@ -1,7 +1,5 @@
-// src/components/RoundsManager.jsx
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import ColorDropdown from './ColorDropdown';
 
 export default function RoundsManager({ tournamentId }) {
   const [rounds, setRounds] = useState([]);
@@ -14,13 +12,13 @@ export default function RoundsManager({ tournamentId }) {
   }, [tournamentId]);
 
   async function fetchRounds() {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('pairings')
       .select('round')
       .eq('tournament_id', tournamentId);
 
-        console.log("🎯 fetchRounds data:", data);
-        console.log("❌ fetchRounds error:", error);
+    console.log("🎯 fetchRounds data:", data);
+    console.log("❌ fetchRounds error:", error);
 
     const uniqueRounds = [...new Set(data.map(p => p.round))];
     setRounds(uniqueRounds);
@@ -34,16 +32,16 @@ export default function RoundsManager({ tournamentId }) {
   }, [activeRound]);
 
   async function fetchPairings() {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('pairings')
       .select('*')
       .eq('tournament_id', tournamentId)
       .eq('round', activeRound);
-    setPairings(data);
-  }
 
-  console.log("📦 pairings data:", data);
-  console.log("❌ pairings error:", error);
+    console.log("📦 Pairings for round:", activeRound, data);
+    if (error) console.error("❌ Error loading pairings:", error);
+    setPairings(data || []);
+  }
 
   function updateField(id, field, value) {
     setEdited(prev => ({ ...prev, [id]: { ...prev[id], [field]: value } }));
@@ -90,8 +88,6 @@ export default function RoundsManager({ tournamentId }) {
         </button>
       </div>
 
-
-
       <table className="w-full text-sm text-left text-gray-300 bg-[#1e1e1e] border border-gray-700 rounded overflow-hidden">
         <thead className="bg-[#2a2a2a] text-gray-100 uppercase text-xs tracking-wider">
           <tr>
@@ -101,13 +97,11 @@ export default function RoundsManager({ tournamentId }) {
             <th className="px-4 py-3 border-b border-gray-700 text-center">Actions</th>
           </tr>
         </thead>
-        console.log("📊 Rendering pairings:", pairings);
         <tbody>
           {pairings.map(p => (
             <tr key={p.id}>
               <td className="px-4 py-3 border-b border-gray-700">{p.tablenum}</td>
               <td className="px-4 py-3 border-b border-gray-700">{p.player_1}</td>
-
               <td className="px-4 py-3 border-b border-gray-700">{p.player_2}</td>
               <td className="px-4 py-3 border-b border-gray-700">
                 <button
