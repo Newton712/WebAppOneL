@@ -21,10 +21,12 @@ export default function RoundsManager({ tournamentId }) {
 
         console.log("🎯 fetchRounds data:", data);
         console.log("❌ fetchRounds error:", error);
-        
+
     const uniqueRounds = [...new Set(data.map(p => p.round))];
     setRounds(uniqueRounds);
-    setActiveRound(uniqueRounds[0] || '');
+    if (uniqueRounds.length > 0) {
+      setActiveRound(uniqueRounds[0]);
+    }
   }
 
   useEffect(() => {
