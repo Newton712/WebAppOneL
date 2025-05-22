@@ -5,10 +5,7 @@ import { BrowserRouter } from 'react-router-dom';
 import App from './App.jsx';
 import './styles/index.css';
 
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
-  </React.StrictMode>
+const root = document.getElementById('root');
+ReactDOM.createRoot(root).render(
+  <h1 style={{ color: 'red' }}>TEST ROOT RENDER</h1>
 );
