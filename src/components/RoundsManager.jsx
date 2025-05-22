@@ -1,11 +1,13 @@
 // src/components/RoundsManager.jsx
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import ColorDropdown from './ColorDropdown';
 
 export default function RoundsManager({ tournamentId }) {
-  const [pairings, setPairings] = useState([]);
-  const [activeRound, setActiveRound] = useState('');
   const [rounds, setRounds] = useState([]);
+  const [activeRound, setActiveRound] = useState('');
+  const [pairings, setPairings] = useState([]);
+  const [edited, setEdited] = useState({});
 
   useEffect(() => {
     fetchRounds();
@@ -17,12 +19,10 @@ export default function RoundsManager({ tournamentId }) {
       .select('round')
       .eq('tournament_id', tournamentId);
 
-    const uniqueRounds = [...new Set(data.map(p => p.round))].sort((a, b) => {
-      const na = parseInt(a.replace(/\D/g, ''));
-      const nb = parseInt(b.replace(/\D/g, ''));
-      return na - nb;
-    });
-
+        console.log("🎯 fetchRounds data:", data);
+        console.log("❌ fetchRounds error:", error);
+        
+    const uniqueRounds = [...new Set(data.map(p => p.round))];
     setRounds(uniqueRounds);
     setActiveRound(uniqueRounds[0] || '');
   }
@@ -37,51 +37,84 @@ export default function RoundsManager({ tournamentId }) {
       .select('*')
       .eq('tournament_id', tournamentId)
       .eq('round', activeRound);
+    setPairings(data);
+  }
 
-    setPairings(data || []);
+  console.log("📦 pairings data:", data);
+  console.log("❌ pairings error:", error);
+
+  function updateField(id, field, value) {
+    setEdited(prev => ({ ...prev, [id]: { ...prev[id], [field]: value } }));
+  }
+
+  async function savePairing(id) {
+    const updates = edited[id];
+    if (updates) {
+      await supabase.from('pairings').update(updates).eq('id', id);
+      setEdited(prev => {
+        const copy = { ...prev };
+        delete copy[id];
+        return copy;
+      });
+      fetchPairings();
+    }
+  }
+
+  async function importTables() {
+    await fetch(`${import.meta.env.VITE_API_URL}/import/tables/${tournamentId}`, {
+      method: 'POST'
+    });
+    fetchRounds();
+    fetchPairings();
   }
 
   return (
-    <div className="text-white mt-6 space-y-4">
-      {/* Onglets des rounds */}
-      <div className="flex flex-wrap gap-2">
+    <div className="mt-6 space-y-4">
+      <div className="flex gap-2">
         {rounds.map(round => (
           <button
             key={round}
             onClick={() => setActiveRound(round)}
-            className={`px-4 py-1 rounded text-sm font-semibold ${
-              activeRound === round ? 'bg-blue-600 text-white' : 'bg-gray-300 text-black'
-            }`}
+            className={`px-3 py-1 rounded ${activeRound === round ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
           >
             {round}
           </button>
         ))}
         <button
-          onClick={async () => {
-            await fetch(`/import/tables/${tournamentId}`, { method: "POST" });
-            fetchRounds(); // Refresh rounds
-          }}
+          onClick={importTables}
           className="bg-green-600 text-white px-3 py-1 rounded"
         >
           ➕ Importer
         </button>
       </div>
 
-      {/* Tableau des pairings */}
+
+
       <table className="w-full text-sm text-left text-gray-300 bg-[#1e1e1e] border border-gray-700 rounded overflow-hidden">
         <thead className="bg-[#2a2a2a] text-gray-100 uppercase text-xs tracking-wider">
           <tr>
             <th className="px-4 py-3 border-b border-gray-700">Table</th>
-            <th className="px-4 py-3 border-b border-gray-700">Player 1</th>
-            <th className="px-4 py-3 border-b border-gray-700">Player 2</th>
+            <th className="px-4 py-3 border-b border-gray-700 text-center">Player 1</th>
+            <th className="px-4 py-3 border-b border-gray-700 text-center">Player 2</th>
+            <th className="px-4 py-3 border-b border-gray-700 text-center">Actions</th>
           </tr>
         </thead>
+        console.log("📊 Rendering pairings:", pairings);
         <tbody>
-          {pairings.map((p, idx) => (
-            <tr key={p.id} className={idx % 2 === 0 ? 'bg-[#1e1e1e]' : 'bg-[#2a2a2a]'}>
-              <td className="px-4 py-2 border-b border-gray-700">{p.tablenum}</td>
-              <td className="px-4 py-2 border-b border-gray-700">{p.player_1}</td>
-              <td className="px-4 py-2 border-b border-gray-700">{p.player_2}</td>
+          {pairings.map(p => (
+            <tr key={p.id}>
+              <td className="px-4 py-3 border-b border-gray-700">{p.tablenum}</td>
+              <td className="px-4 py-3 border-b border-gray-700">{p.player_1}</td>
+
+              <td className="px-4 py-3 border-b border-gray-700">{p.player_2}</td>
+              <td className="px-4 py-3 border-b border-gray-700">
+                <button
+                  onClick={() => savePairing(p.id)}
+                  className="bg-green-600 text-white px-2 py-1 rounded"
+                >
+                  💾
+                </button>
+              </td>
             </tr>
           ))}
         </tbody>
