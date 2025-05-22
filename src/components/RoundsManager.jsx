@@ -70,29 +70,7 @@ export default function RoundsManager({ tournamentId }) {
 
   return (
     <div className="mt-6 space-y-4">
-      <div className="flex gap-2">
-        {rounds.map(round => (
-          <button
-            key={round}
-            onClick={() => setActiveRound(round)}
-            className={`px-3 py-1 rounded ${activeRound === round ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
-          >
-            {round}
-          </button>
-        ))}
-        <button
-          onClick={importTables}
-          className="bg-green-600 text-white px-3 py-1 rounded"
-        >
-          ➕ Importer
-        </button>
-      </div>
-      {/* Vérifie si pairings contient bien des données */}
-      {pairings?.length > 0 ? (
-         <div className="text-white">Infos a afficher.</div>
-      ) : (
-      <div className="text-white">Aucune table à afficher pour ce round.</div>
-    )}
+      <pre className="text-white">{JSON.stringify(pairings, null, 2)}</pre>
     </div>
   );
 }
