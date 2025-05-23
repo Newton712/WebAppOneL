@@ -3,7 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import TournamentDetails from '../components/TournamentDetails';
 import PlayersList from '../components/PlayersList';
-import RoundsTabs from '../components/RoundsTabs';
+
+import RoundsManager from '../components/RoundsManager';
 import { supabase } from '../lib/supabase';
 
 export default function TournamentPage() {
@@ -59,12 +60,13 @@ export default function TournamentPage() {
         <PlayersList tournamentId={id} players={players} reload={fetchPlayers} />
 
         <div className="mt-10">
-          <RoundsTabs
-            pairings={pairings}
-            selectedRound={selectedRound}
-            onSelectRound={setSelectedRound}
-            onImport={handleImportTables}
-          />
+            <RoundsManager
+              tournamentId={id}
+              pairings={pairings}
+              selectedRound={selectedRound}
+              onRoundChange={setSelectedRound}
+              reload={fetchPairings}
+            />
         </div>
       </div>
     </div>

@@ -1,10 +1,10 @@
+// src/components/RoundsManager.jsx
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import ColorDropdown from './ColorDropdown';
 
-export default function RoundsManager({ tournamentId }) {
+export default function RoundsManager({ tournamentId, pairings = [], selectedRound, onRoundChange, reload }) {
   const [rounds, setRounds] = useState([]);
-  const [activeRound, setActiveRound] = useState('');
-  const [pairings, setPairings] = useState([]);
   const [edited, setEdited] = useState({});
 
   useEffect(() => {
@@ -17,30 +17,16 @@ export default function RoundsManager({ tournamentId }) {
       .select('round')
       .eq('tournament_id', tournamentId);
 
-    console.log("🎯 fetchRounds data:", data);
-    console.log("❌ fetchRounds error:", error);
+    if (error) {
+      console.error("❌ fetchRounds error:", error);
+      return;
+    }
 
     const uniqueRounds = [...new Set(data.map(p => p.round))];
     setRounds(uniqueRounds);
-    if (uniqueRounds.length > 0) {
-      setActiveRound(uniqueRounds[0]);
+    if (uniqueRounds.length > 0 && !selectedRound) {
+      onRoundChange(uniqueRounds[0]);
     }
-  }
-
-  useEffect(() => {
-    if (activeRound) fetchPairings();
-  }, [activeRound]);
-
-  async function fetchPairings() {
-    const { data, error } = await supabase
-      .from('pairings')
-      .select('*')
-      .eq('tournament_id', tournamentId)
-      .eq('round', activeRound);
-
-    console.log("📦 Pairings for round:", activeRound, data);
-    if (error) console.error("❌ Error loading pairings:", error);
-    setPairings(data || []);
   }
 
   function updateField(id, field, value) {
@@ -56,7 +42,7 @@ export default function RoundsManager({ tournamentId }) {
         delete copy[id];
         return copy;
       });
-      fetchPairings();
+      reload();
     }
   }
 
@@ -65,8 +51,10 @@ export default function RoundsManager({ tournamentId }) {
       method: 'POST'
     });
     fetchRounds();
-    fetchPairings();
+    reload();
   }
+
+  const currentTables = pairings.filter(p => p.round === selectedRound);
 
   return (
     <div className="mt-6 space-y-4">
@@ -74,8 +62,8 @@ export default function RoundsManager({ tournamentId }) {
         {rounds.map(round => (
           <button
             key={round}
-            onClick={() => setActiveRound(round)}
-            className={`px-3 py-1 rounded ${activeRound === round ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+            onClick={() => onRoundChange(round)}
+            className={`px-3 py-1 rounded ${selectedRound === round ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
           >
             {round}
           </button>
@@ -87,8 +75,7 @@ export default function RoundsManager({ tournamentId }) {
           ➕ Importer
         </button>
       </div>
-      {/* Vérifie si pairings contient bien des données */}
-      {pairings?.length > 0 ? (
+
       <table className="w-full text-sm text-left text-gray-300 bg-[#1e1e1e] border border-gray-700 rounded overflow-hidden">
         <thead className="bg-[#2a2a2a] text-gray-100 uppercase text-xs tracking-wider">
           <tr>
@@ -99,7 +86,7 @@ export default function RoundsManager({ tournamentId }) {
           </tr>
         </thead>
         <tbody>
-          {pairings.map(p => (
+          {currentTables.map(p => (
             <tr key={p.id}>
               <td className="px-4 py-3 border-b border-gray-700">{p.tablenum}</td>
               <td className="px-4 py-3 border-b border-gray-700">{p.player_1}</td>
@@ -116,9 +103,7 @@ export default function RoundsManager({ tournamentId }) {
           ))}
         </tbody>
       </table>
-      ) : (
-      <div className="text-white">Aucune table à afficher pour ce round.</div>
-    )}
     </div>
   );
 }
+
