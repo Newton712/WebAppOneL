@@ -56,18 +56,33 @@ export default function RoundsManager({ tournamentId }) {
     }
   }
 
+    async function importTables() {
+    await fetch(`${import.meta.env.VITE_API_URL}/import/tables/${tournamentId}`, {
+      method: 'POST'
+    });
+    fetchRounds();
+    fetchPairings();
+  }
+
+
   return (
     <div className="mb-6 overflow-x-auto">
-      <div className="flex flex-wrap gap-2 mb-4">
+      <div className="flex gap-2 mb-4">
         {rounds.map(round => (
           <button
             key={round}
             onClick={() => setActiveRound(round)}
-            className={`px-3 py-1 rounded ${activeRound === round ? 'bg-blue-600 text-white' : 'bg-gray-200 text-black'}`}
+            className={`px-3 py-1 rounded ${activeRound === round ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
           >
             {round}
           </button>
         ))}
+        <button
+          onClick={importTables}
+          className="bg-gray-700 text-white px-4 py-2 rounded"
+        >
+          ➕ Importer
+        </button>
       </div>
 
       <table className="min-w-[800px] w-full text-sm text-left text-gray-300 bg-[#1e1e1e] border border-gray-700 rounded">
