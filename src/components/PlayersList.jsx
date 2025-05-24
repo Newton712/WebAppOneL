@@ -46,9 +46,9 @@ export default function PlayersList({ tournamentId }) {
         <thead className="bg-[#2a2a2a] text-gray-100 uppercase text-xs tracking-wider">
           <tr>
             <th className="px-4 py-3 border-b">Name</th>
-            <th className="px-4 py-3 border-b">Deck Color</th>
-            <th className="px-4 py-3 border-b">Comments</th>
-            <th className="px-4 py-3 border-b">Actions</th>
+            <th className="px-4 py-3 border-b text-center">Deck Color</th>
+            <th className="px-4 py-3 border-b text-center">Comments</th>
+            <th className="px-4 py-3 border-b text-center">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -56,7 +56,7 @@ export default function PlayersList({ tournamentId }) {
             const isEditing = editPlayer?.id === p.id;
             return (
               <tr key={p.id} className={idx % 2 === 0 ? 'bg-[#1e1e1e]' : 'bg-[#2a2a2a]'}>
-                <td className="px-4 py-2 border-b border-gray-700">
+                <td className="px-4 py-2 border-b border-gray-700 ">
                   {isEditing ? (
                     <input
                       className="w-full bg-[#1e1e1e] text-white border border-gray-600 rounded px-2 py-1"
@@ -98,7 +98,7 @@ export default function PlayersList({ tournamentId }) {
                     </>
                   )}
                 </td>
-                <td className="px-4 py-2 border-b border-gray-700">
+                <td className="px-4 py-2 border-b border-gray-700 text-center">
                   {isEditing ? (
                     <input
                       className="w-full bg-[#1e1e1e] text-white border border-gray-600 rounded px-2 py-1"

@@ -76,11 +76,11 @@ export default function RoundsManager({ tournamentId }) {
             <th className="px-4 py-3 border-b">Table</th>
             <th className="px-4 py-3 border-b">Player 1</th>
             <th className="px-4 py-3 border-b">Player 2</th>
-            <th className="px-4 py-3 border-b">Deck Player 1</th>
+            <th className="px-4 py-3 border-b text-center">Deck Player 1</th>
             <th className="px-4 py-3 border-b">VS</th>
-            <th className="px-4 py-3 border-b">Deck Player 2</th>
-            <th className="px-4 py-3 border-b">Assigned</th>
-            <th className="px-4 py-3 border-b">Actions</th>
+            <th className="px-4 py-3 border-b text-center">Deck Player 2</th>
+            <th className="px-4 py-3 border-b text-center">Assigned</th>
+            <th className="px-4 py-3 border-b text-center">Actions</th>
           </tr>
         </thead>
         <tbody>
