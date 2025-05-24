@@ -20,7 +20,7 @@ export default function TournamentDetails({ tournament, onBack }) {
           onClick={() => navigate('/')}
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
         >
-          Retour accueil
+          ---- Retour accueil 2
         </button>
       </header>
 

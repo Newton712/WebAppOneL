@@ -6,6 +6,7 @@ import PlayerTable from '../components/PlayerTable';
 import { supabase } from '../lib/supabase';
 import { useNavigate } from 'react-router-dom';
 
+
 export default function Home() {
   const [tournamentResults, setTournamentResults] = useState([]);
   const [playerResults, setPlayerResults] = useState([]);
@@ -53,14 +54,17 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-melee text-white">
+
+    <div className="min-h-screen bg-[#1e1e1e] text-white">
+
       <Header
         onImportOrOpen={handleImportOrOpen}
         onSearchTournaments={handleSearchTournaments}
         onSearchPlayers={handleSearchPlayers}
       />
 
-      <div className="px-4 mt-24 space-y-8">
+
+      <div className="px-4 mt-24 space-y-8 bg-[#1e1e1e]">
         {loading && <p>Chargement...</p>}
         {tournamentResults.length > 0 && (
           <TournamentTable tournaments={tournamentResults} />

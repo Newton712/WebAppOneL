@@ -1,0 +1,61 @@
+// src/components/Header.jsx
+import React from 'react';
+import logo from '../assets/logo.png'; // Adapte le chemin selon ton image
+
+export default function Header({
+  meleeUrl,
+  setMeleeUrl,
+  searchTournamentName,
+  setSearchTournamentName,
+  searchPlayerName,
+  setSearchPlayerName,
+  onImport,
+  onSearchTournament,
+  onSearchPlayer
+}) {
+  return (
+    <header className="bg-[#1e1e1e] p-4 shadow-md flex justify-between items-center">
+      <div className="flex flex-col space-y-2 w-full max-w-5xl">
+        <div className="flex space-x-2">
+          <input
+            className="flex-1 bg-[#2a2a2a] text-white px-3 py-2 rounded"
+            placeholder="Lien Melee.gg"
+            value={meleeUrl}
+            onChange={(e) => setMeleeUrl(e.target.value)}
+          />
+          <button onClick={onImport} className="bg-blue-600 text-white px-4 py-2 rounded">
+            Importer / Ouvrir
+          </button>
+        </div>
+
+        <div className="flex space-x-2">
+          <input
+            className="flex-1 bg-[#2a2a2a] text-white px-3 py-2 rounded"
+            placeholder="Nom du tournoi"
+            value={searchTournamentName}
+            onChange={(e) => setSearchTournamentName(e.target.value)}
+          />
+          <button onClick={onSearchTournament} className="bg-blue-600 text-white px-4 py-2 rounded">
+            Rechercher Tournoi
+          </button>
+        </div>
+
+        <div className="flex space-x-2">
+          <input
+            className="flex-1 bg-[#2a2a2a] text-white px-3 py-2 rounded"
+            placeholder="Nom du joueur"
+            value={searchPlayerName}
+            onChange={(e) => setSearchPlayerName(e.target.value)}
+          />
+          <button onClick={onSearchPlayer} className="bg-blue-600 text-white px-4 py-2 rounded">
+            Rechercher pinpin Joueur
+          </button>
+        </div>
+      </div>
+
+      <div className="ml-6">
+        <img src={logo} alt="Logo" className="w-20 h-auto" />
+      </div>
+    </header>
+  );
+}

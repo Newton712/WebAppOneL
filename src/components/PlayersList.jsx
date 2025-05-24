@@ -47,15 +47,15 @@ async function savePlayer(playerId) {
 }
 
   return (
-    <div className="mb-6">
-      <h3 className="text-lg font-semibold mb-3 text-white">Joueurs du tournoi</h3>
+    <div className="mb-6 bg-[#1e1e1e]">
+      <h3 className="text-lg font-semibold mb-3 text-white bg-[#1e1e1e]">Tournament players</h3>
       <table className="w-full text-sm text-left text-gray-300 bg-[#1e1e1e] border border-gray-700 rounded overflow-hidden">
         <thead className="bg-[#2a2a2a] text-gray-100 uppercase text-xs tracking-wider">
           <tr>
-            <th className="px-4 py-3 border-b border-gray-700">Nom</th>
-            <th className="px-4 py-3 border-b border-gray-700 text-center">Deck 1</th>
-            <th className="px-4 py-3 border-b border-gray-700 text-center">Deck 2</th>
-            <th className="px-4 py-3 border-b border-gray-700">Commentaires</th>
+            <th className="px-4 py-3 border-b border-gray-700">Name</th>
+            <th className="px-4 py-3 border-b border-gray-700 text-center">Color 1</th>
+            <th className="px-4 py-3 border-b border-gray-700 text-center">Color 2</th>
+            <th className="px-4 py-3 border-b border-gray-700">Comments</th>
             <th className="px-4 py-3 border-b border-gray-700 text-center">Actions</th>
           </tr>
         </thead>
