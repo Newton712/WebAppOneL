@@ -44,9 +44,14 @@ export default function TournamentSelector() {
   async function searchPlayers() {
     const { data } = await supabase
       .from('players')
-      .select('*')
+      .select('name')
       .ilike('name', `%${searchPlayer}%`);
-    setPlayerResults(data || []);
+
+    const uniqueNames = Array.from(new Set(data.map(p => p.name.toLowerCase())))
+      .map(lower => data.find(p => p.name.toLowerCase() === lower)?.name)
+      .sort((a, b) => a.localeCompare(b));
+
+    setPlayerResults(uniqueNames.map(name => ({ name })));
   }
 
   return (
@@ -57,7 +62,7 @@ export default function TournamentSelector() {
       </header>
 
       <div className="p-6 space-y-4">
-        <div className="flex gap-4">
+        <div className="flex gap-4 flex-col md:flex-row">
           <input
             placeholder="Lien Melee.gg"
             value={meleeLink}
@@ -72,7 +77,7 @@ export default function TournamentSelector() {
           </button>
         </div>
 
-        <div className="flex gap-4">
+        <div className="flex gap-4 flex-col md:flex-row">
           <input
             placeholder="Nom du tournoi"
             value={searchName}
@@ -87,7 +92,7 @@ export default function TournamentSelector() {
           </button>
         </div>
 
-        <div className="flex gap-4">
+        <div className="flex gap-4 flex-col md:flex-row">
           <input
             placeholder="Nom du joueur"
             value={searchPlayer}
@@ -146,7 +151,7 @@ export default function TournamentSelector() {
             </thead>
             <tbody>
               {playerResults.map(p => (
-                <tr key={p.id}>
+                <tr key={p.name}>
                   <td className="px-4 py-3 border-b border-gray-700">{p.name}</td>
                   <td className="px-4 py-3 border-b border-gray-700">
                     <button

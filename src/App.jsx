@@ -81,7 +81,7 @@ export default function App() {
         }
       />
       <Route path="/tournament/:id" element={<TournamentPage />} />
-      <Route path="/player/:id" element={<PlayerHistory />} />
+      <Route path="/player/:name" element={<PlayerHistory />} />
     </Routes>
   );
 }

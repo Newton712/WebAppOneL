@@ -23,15 +23,37 @@ export default function Home() {
     setLoading(false);
   }
 
-  async function handleSearchPlayers(name) {
-    setLoading(true);
-    const { data, error } = await supabase
-      .from('players')
-      .select('*')
-      .ilike('name', `%${name}%`);
-    setPlayerResults(data || []);
-    setLoading(false);
+async function handleSearchPlayers(name) {
+  setLoading(true);
+
+  const { data, error } = await supabase
+    .from('players')
+    .select('name')
+    .ilike('name', `%${name}%`);
+
+  if (error) {
+    console.error('❌ Error fetching players:', error);
+    setPlayerResults([]);
+  } else {
+    // Supprimer les doublons avec insensibilité à la casse
+    const seen = new Set();
+    const unique = [];
+
+    for (const player of data) {
+      const lower = player.name.toLowerCase();
+      if (!seen.has(lower)) {
+        seen.add(lower);
+        unique.push(player.name); // garder la casse d'origine
+      }
+    }
+
+    // Trier alphabétiquement
+    unique.sort((a, b) => a.localeCompare(b));
+    setPlayerResults(unique.map(name => ({ name })));
   }
+
+  setLoading(false);
+}
 
   async function handleImportOrOpen(link) {
     const match = link.match(/\/Tournament\/View\/(\d+)/);
