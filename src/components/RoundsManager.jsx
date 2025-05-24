@@ -25,7 +25,6 @@ export default function RoundsManager({ tournamentId }) {
       .from('pairings')
       .select('round')
       .eq('tournament_id', tournamentId);
-
     const uniqueRounds = [...new Set(data.map(p => p.round))];
     setRounds(uniqueRounds);
     setActiveRound(uniqueRounds[0] || '');
@@ -57,51 +56,31 @@ export default function RoundsManager({ tournamentId }) {
     }
   }
 
-  async function importTables() {
-    await fetch(`${import.meta.env.VITE_API_URL}/import/tables/${tournamentId}`, {
-      method: 'POST'
-    });
-    fetchRounds();
-    fetchPairings();
-  }
-
-
-
   return (
-    <div className="mb-6 bg-[#1e1e1e]">
-
-      <div className="flex gap-2 mb-4">
+    <div className="mb-6 overflow-x-auto">
+      <div className="flex flex-wrap gap-2 mb-4">
         {rounds.map(round => (
           <button
             key={round}
             onClick={() => setActiveRound(round)}
-            className={`px-3 py-1 rounded ${activeRound === round ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+            className={`px-3 py-1 rounded ${activeRound === round ? 'bg-blue-600 text-white' : 'bg-gray-200 text-black'}`}
           >
             {round}
           </button>
         ))}
-        <button
-          onClick={importTables}
-          className="bg-gray-700 text-white px-4 py-2 rounded"
-        >
-          ➕ Importer
-        </button>
       </div>
 
-
-      <table className="w-full text-sm text-left text-gray-300 bg-[#1e1e1e] border border-gray-700 rounded overflow-hidden">
+      <table className="min-w-[800px] w-full text-sm text-left text-gray-300 bg-[#1e1e1e] border border-gray-700 rounded">
         <thead className="bg-[#2a2a2a] text-gray-100 uppercase text-xs tracking-wider">
           <tr>
-            <th className="px-4 py-3 border-b border-gray-700">Table</th>
-            <th className="px-4 py-3 border-b border-gray-700">Player 1</th>
-             <th className="px-4 py-3 border-b border-gray-700">Player 2</th>
-            <th className="px-4 py-3 border-b border-gray-700">Player 1 - Color 1</th>
-            <th className="px-4 py-3 border-b border-gray-700">Player 1 - Color 2</th>
-            <th className="px-4 py-3 border-b border-gray-700">VS</th>
-            <th className="px-4 py-3 border-b border-gray-700">Player 2 - Color 1</th>
-            <th className="px-4 py-3 border-b border-gray-700">Player 2 - Color 2</th>
-            <th className="px-4 py-3 border-b border-gray-700">Assigned</th>
-            <th className="px-4 py-3 border-b border-gray-700">Actions</th>
+            <th className="px-4 py-3 border-b">Table</th>
+            <th className="px-4 py-3 border-b">Player 1</th>
+            <th className="px-4 py-3 border-b">Player 2</th>
+            <th className="px-4 py-3 border-b">Deck Player 1</th>
+            <th className="px-4 py-3 border-b">VS</th>
+            <th className="px-4 py-3 border-b">Deck Player 2</th>
+            <th className="px-4 py-3 border-b">Assigned</th>
+            <th className="px-4 py-3 border-b">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -112,46 +91,69 @@ export default function RoundsManager({ tournamentId }) {
                 <td className="px-4 py-2 border-b border-gray-700">{p.tablenum}</td>
                 <td className="px-4 py-2 border-b border-gray-700">{p.player_1}</td>
                 <td className="px-4 py-2 border-b border-gray-700">{p.player_2}</td>
-
-                {['deckcolora1', 'deckcolora2'].map(field => (
-                  <td className="px-4 py-2 border-b border-gray-700 text-center" key={field}>
-                    {isEditing ? (
+                <td className="px-4 py-2 border-b border-gray-700 text-center">
+                  {isEditing ? (
+                    <>
                       <select
-                        className="bg-[#1e1e1e] text-white border border-gray-600 rounded px-2 py-1"
-                        value={editRow[field] || ''}
-                        onChange={(e) => setEditRow({ ...editRow, [field]: e.target.value })}
+                        className="bg-[#1e1e1e] text-white border border-gray-600 rounded px-2 py-1 mb-1"
+                        value={editRow.deckcolora1 || ''}
+                        onChange={(e) => setEditRow({ ...editRow, deckcolora1: e.target.value })}
                       >
                         <option value="">--</option>
                         {Object.keys(colorImages).map(c => (
                           <option key={c} value={c}>{c}</option>
                         ))}
                       </select>
-                    ) : (
-                      p[field] && <img src={colorImages[p[field]]} alt={p[field]} className="w-5 h-5 inline-block rounded" />
-                    )}
-                  </td>
-                ))}
-                <td className="px-4 py-3 border-b border-gray-700">VS</td>
-
-                {['deckcolorb1', 'deckcolorb2'].map(field => (
-                  <td className="px-4 py-2 border-b border-gray-700 text-center" key={field}>
-                    {isEditing ? (
                       <select
                         className="bg-[#1e1e1e] text-white border border-gray-600 rounded px-2 py-1"
-                        value={editRow[field] || ''}
-                        onChange={(e) => setEditRow({ ...editRow, [field]: e.target.value })}
+                        value={editRow.deckcolora2 || ''}
+                        onChange={(e) => setEditRow({ ...editRow, deckcolora2: e.target.value })}
                       >
                         <option value="">--</option>
                         {Object.keys(colorImages).map(c => (
                           <option key={c} value={c}>{c}</option>
                         ))}
                       </select>
-                    ) : (
-                      p[field] && <img src={colorImages[p[field]]} alt={p[field]} className="w-5 h-5 inline-block rounded" />
-                    )}
-                  </td>
-                ))}
-                
+                    </>
+                  ) : (
+                    <>
+                      {p.deckcolora1 && <img src={colorImages[p.deckcolora1]} alt={p.deckcolora1} className="w-5 h-5 inline-block rounded mr-1" />}
+                      {p.deckcolora2 && <img src={colorImages[p.deckcolora2]} alt={p.deckcolora2} className="w-5 h-5 inline-block rounded" />}
+                    </>
+                  )}
+                </td>
+                <td className="px-4 py-2 border-b border-gray-700 text-center font-bold">VS</td>
+                <td className="px-4 py-2 border-b border-gray-700 text-center">
+                  {isEditing ? (
+                    <>
+                      <select
+                        className="bg-[#1e1e1e] text-white border border-gray-600 rounded px-2 py-1 mb-1"
+                        value={editRow.deckcolorb1 || ''}
+                        onChange={(e) => setEditRow({ ...editRow, deckcolorb1: e.target.value })}
+                      >
+                        <option value="">--</option>
+                        {Object.keys(colorImages).map(c => (
+                          <option key={c} value={c}>{c}</option>
+                        ))}
+                      </select>
+                      <select
+                        className="bg-[#1e1e1e] text-white border border-gray-600 rounded px-2 py-1"
+                        value={editRow.deckcolorb2 || ''}
+                        onChange={(e) => setEditRow({ ...editRow, deckcolorb2: e.target.value })}
+                      >
+                        <option value="">--</option>
+                        {Object.keys(colorImages).map(c => (
+                          <option key={c} value={c}>{c}</option>
+                        ))}
+                      </select>
+                    </>
+                  ) : (
+                    <>
+                      {p.deckcolorb1 && <img src={colorImages[p.deckcolorb1]} alt={p.deckcolorb1} className="w-5 h-5 inline-block rounded mr-1" />}
+                      {p.deckcolorb2 && <img src={colorImages[p.deckcolorb2]} alt={p.deckcolorb2} className="w-5 h-5 inline-block rounded" />}
+                    </>
+                  )}
+                </td>
                 <td className="px-4 py-2 border-b border-gray-700 text-center">
                   {isEditing ? (
                     <input

@@ -19,44 +19,36 @@ export default function PlayersList({ tournamentId }) {
   }, [tournamentId]);
 
   async function fetchPlayers() {
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from('players')
       .select('*')
-      .eq('tournament_id', tournamentId)
-      .order('name');
-    if (data) setPlayers(data);
+      .eq('tournament_id', tournamentId);
+    setPlayers(data.sort((a, b) => a.name.localeCompare(b.name)));
   }
 
-async function savePlayer(playerId) {
-  const { error } = await supabase
-    .from('players')
-    .update({
-      name: editPlayer.name.trim(),
-      comments: editPlayer.comments?.trim() || null,
-      deckcolor1: editPlayer.deckcolor1 || null,
-      deckcolor2: editPlayer.deckcolor2 || null
-    })
-    .eq('id', playerId);
+  async function savePlayer(id) {
+    const updated = editPlayer;
+    const { error } = await supabase
+      .from('players')
+      .update(updated)
+      .eq('id', id);
 
-  if (!error) {
-    setEditPlayer(null);  // <- repasse en mode affichage
-    fetchPlayers();       // <- recharge les données avec les couleurs et commentaires
-  } else {
-    console.error("Erreur lors de la sauvegarde:", error);
+    if (!error) {
+      setEditPlayer(null);
+      fetchPlayers();
+    }
   }
-}
 
   return (
-    <div className="mb-6 bg-[#1e1e1e]">
-      <h3 className="text-lg font-semibold mb-3 text-white bg-[#1e1e1e]">Tournament players</h3>
-      <table className="w-full text-sm text-left text-gray-300 bg-[#1e1e1e] border border-gray-700 rounded overflow-hidden">
+    <div className="mb-6 overflow-x-auto">
+      <h3 className="text-lg font-semibold mb-3 text-white">Joueurs du tournoi</h3>
+      <table className="min-w-[600px] w-full text-sm text-left text-gray-300 bg-[#1e1e1e] border border-gray-700 rounded">
         <thead className="bg-[#2a2a2a] text-gray-100 uppercase text-xs tracking-wider">
           <tr>
-            <th className="px-4 py-3 border-b border-gray-700">Name</th>
-            <th className="px-4 py-3 border-b border-gray-700 text-center">Color 1</th>
-            <th className="px-4 py-3 border-b border-gray-700 text-center">Color 2</th>
-            <th className="px-4 py-3 border-b border-gray-700">Comments</th>
-            <th className="px-4 py-3 border-b border-gray-700 text-center">Actions</th>
+            <th className="px-4 py-3 border-b">Name</th>
+            <th className="px-4 py-3 border-b">Deck Color</th>
+            <th className="px-4 py-3 border-b">Comments</th>
+            <th className="px-4 py-3 border-b">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -64,38 +56,46 @@ async function savePlayer(playerId) {
             const isEditing = editPlayer?.id === p.id;
             return (
               <tr key={p.id} className={idx % 2 === 0 ? 'bg-[#1e1e1e]' : 'bg-[#2a2a2a]'}>
-                <td className="px-4 py-2 border-b border-gray-700">{p.name}</td>
-
-                 <td className="px-4 py-2 border-b border-gray-700 text-center">
+                <td className="px-4 py-2 border-b border-gray-700">
                   {isEditing ? (
-                    <select
-                      className="bg-[#1e1e1e] text-white border border-gray-600 rounded px-2 py-1"
-                      value={editPlayer.deckcolor1 || ''}
-                      onChange={(e) => setEditPlayer({ ...editPlayer, deckcolor1: e.target.value })}
-                    >
-                      <option value="">--</option>
-                      {Object.keys(colorImages).map(c => (
-                        <option key={c} value={c}>{c}</option>
-                      ))}
-                    </select>
+                    <input
+                      className="w-full bg-[#1e1e1e] text-white border border-gray-600 rounded px-2 py-1"
+                      value={editPlayer.name}
+                      onChange={(e) => setEditPlayer({ ...editPlayer, name: e.target.value })}
+                    />
                   ) : (
-                    p.deckcolor1 && <img src={colorImages[p.deckcolor1]} alt={p.deckcolor1} className="w-5 h-5 inline-block rounded" />
+                    p.name
                   )}
                 </td>
                 <td className="px-4 py-2 border-b border-gray-700 text-center">
                   {isEditing ? (
-                    <select
-                      className="bg-[#1e1e1e] text-white border border-gray-600 rounded px-2 py-1"
-                      value={editPlayer.deckcolor2 || ''}
-                      onChange={(e) => setEditPlayer({ ...editPlayer, deckcolor2: e.target.value })}
-                    >
-                      <option value="">--</option>
-                      {Object.keys(colorImages).map(c => (
-                        <option key={c} value={c}>{c}</option>
-                      ))}
-                    </select>
+                    <>
+                      <select
+                        className="bg-[#1e1e1e] text-white border border-gray-600 rounded px-2 py-1 mb-1"
+                        value={editPlayer.deckcolor1 || ''}
+                        onChange={(e) => setEditPlayer({ ...editPlayer, deckcolor1: e.target.value })}
+                      >
+                        <option value="">--</option>
+                        {Object.keys(colorImages).map(c => (
+                          <option key={c} value={c}>{c}</option>
+                        ))}
+                      </select>
+                      <select
+                        className="bg-[#1e1e1e] text-white border border-gray-600 rounded px-2 py-1"
+                        value={editPlayer.deckcolor2 || ''}
+                        onChange={(e) => setEditPlayer({ ...editPlayer, deckcolor2: e.target.value })}
+                      >
+                        <option value="">--</option>
+                        {Object.keys(colorImages).map(c => (
+                          <option key={c} value={c}>{c}</option>
+                        ))}
+                      </select>
+                    </>
                   ) : (
-                    p.deckcolor2 && <img src={colorImages[p.deckcolor2]} alt={p.deckcolor2} className="w-5 h-5 inline-block rounded" />
+                    <>
+                      {p.deckcolor1 && <img src={colorImages[p.deckcolor1]} alt={p.deckcolor1} className="w-5 h-5 inline-block rounded mr-1" />}
+                      {p.deckcolor2 && <img src={colorImages[p.deckcolor2]} alt={p.deckcolor2} className="w-5 h-5 inline-block rounded" />}
+                    </>
                   )}
                 </td>
                 <td className="px-4 py-2 border-b border-gray-700">
@@ -114,16 +114,12 @@ async function savePlayer(playerId) {
                     <button
                       className="bg-green-600 text-white px-2 py-1 rounded"
                       onClick={() => savePlayer(p.id)}
-                    >
-                      💾
-                    </button>
+                    >💾</button>
                   ) : (
                     <button
                       className="text-blue-400 underline"
                       onClick={() => setEditPlayer(p)}
-                    >
-                      Modifier
-                    </button>
+                    >Modifier</button>
                   )}
                 </td>
               </tr>
